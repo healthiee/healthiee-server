@@ -5,7 +5,7 @@ env:
   variables:
     AWS_DEFAULT_REGION: "ap-northeast-2"
     AWS_ACCOUNT_ID: "837533427789"
-    IMAGE_REPO_NAME: "healthiee-server"
+    IMAGE_REPO_NAME: "healthiee"
     IMAGE_TAG: "0.0.1"
 phases:
   pre_build:
