@@ -40,5 +40,5 @@ jobs:
         with:
           task-definition: task-definition.json
           cluster: healthiee-cluster
-          service: healthiee-service
+          service: healthiee-cluster-service
           wait-for-service-stability: true
