@@ -21,7 +21,7 @@ abstract class BaseEntity {
     var lastModifiedDate: LocalDateTime = LocalDateTime.now()
         protected set
 
-    @Column
+    @Column(nullable = false)
     val isDeleted: Boolean = false
 
 }

@@ -1,15 +1,15 @@
 package healthiee.rest.api
 
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class HelloApiController {
 
-//    @GetMapping("/api/v1/hello")
-//    fun hello(): String {
-//        mailService.send("jihoi.kang@gmail.com")
-//        return "{\"title\":\"world\"}"
-//    }
+    @GetMapping("/api/v1/hello")
+    fun hello(): String {
+        return "{\"title\":\"world\"}"
+    }
 
 //    @PostMapping("/api/v1/hello")
 //    fun postHello(@RequestBody params: HelloCreate): String {

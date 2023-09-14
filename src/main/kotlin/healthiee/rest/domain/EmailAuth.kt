@@ -25,7 +25,12 @@ class EmailAuth(
     val code: UUID = UUID.randomUUID()
 
     @Column
-    val disabled: Boolean = false
+    var disabled: Boolean = false
+        private set
+
+    fun used() {
+        this.disabled = true
+    }
 
     companion object {
         fun createEmailAuth(email: String): EmailAuth =
