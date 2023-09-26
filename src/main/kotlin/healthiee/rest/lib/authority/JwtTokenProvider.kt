@@ -67,12 +67,13 @@ class JwtTokenProvider {
     fun getAuthentication(token: String): Authentication {
         val claims: Claims = getClaims(token)
         val auth = claims["auth"] ?: throw RuntimeException("잘못된 토큰입니다.")
+        val id = claims["id"] ?: throw RuntimeException("잘못된 토큰입니다.")
 
         val authorities = (auth as String)
             .split(",")
             .map { SimpleGrantedAuthority(it) }
 
-        val principal: UserDetails = User(claims.subject, "", authorities)
+        val principal: UserDetails = User(id.toString(), "", authorities)
 
         return UsernamePasswordAuthenticationToken(principal, "", authorities)
     }

@@ -26,7 +26,8 @@ class SecurityConfig(
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .authorizeHttpRequests {
                 it.requestMatchers("/v1/auth/**").anonymous()
-                    .anyRequest().authenticated()
+                    .requestMatchers("/v1/members/**").hasRole("MEMBER")
+                    .anyRequest().permitAll()
             }
             .addFilterBefore(
                 JwtAuthenticationFilter(jwtTokenProvider),

@@ -1,6 +1,7 @@
 package healthiee.rest.domain
 
 import com.fasterxml.jackson.annotation.JsonIgnore
+import healthiee.rest.api.member.dto.MemberDto
 import healthiee.rest.domain.base.BaseEntity
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
@@ -51,7 +52,7 @@ class Member(params: MemberParam) : BaseEntity() {
         val nickname: String,
         val bio: String? = null,
         val profileUrl: String? = null,
-        val workouts: List<String> = listOf()
+        val workouts: List<String> = listOf(),
     )
 
     companion object {
@@ -61,3 +62,13 @@ class Member(params: MemberParam) : BaseEntity() {
     }
 
 }
+
+fun Member.toDto() = MemberDto(
+    id,
+    email,
+    name,
+    nickname,
+    bio,
+    profileUrl,
+    workouts,
+)
