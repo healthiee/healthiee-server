@@ -3,7 +3,7 @@ package healthiee.rest.service
 import healthiee.rest.api.base.FailureType
 import healthiee.rest.api.base.ServiceResponse
 import healthiee.rest.api.member.dto.MemberDto
-import healthiee.rest.domain.toDto
+import healthiee.rest.domain.member.toDto
 import healthiee.rest.repository.MemberRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.repository.findByIdOrNull

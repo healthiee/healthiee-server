@@ -1,18 +1,20 @@
-package healthiee.rest.domain
+package healthiee.rest.domain.member
 
-import com.fasterxml.jackson.annotation.JsonIgnore
 import healthiee.rest.api.member.dto.MemberDto
 import healthiee.rest.domain.base.BaseEntity
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
 import jakarta.persistence.Id
-import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
+import org.springframework.security.core.GrantedAuthority
+import org.springframework.security.core.userdetails.UserDetails
 import java.util.*
 
 @Entity
 @Table(name = "members")
-class Member(params: MemberParam) : BaseEntity() {
+class Member(params: MemberParam) : BaseEntity(), UserDetails {
 
     @Id
     @Column(name = "member_id")
@@ -42,18 +44,33 @@ class Member(params: MemberParam) : BaseEntity() {
     var workouts: List<String> = params.workouts
         private set
 
-    @OneToMany(mappedBy = "member")
-    @JsonIgnore
-    val memberRoles: List<MemberRole> = listOf()
+    @Enumerated(EnumType.STRING)
+    var role: RoleType = params.roleType
+        private set
 
     data class MemberParam(
         val email: String,
         val name: String,
         val nickname: String,
+        val roleType: RoleType = RoleType.MEMBER,
         val bio: String? = null,
         val profileUrl: String? = null,
         val workouts: List<String> = listOf(),
     )
+
+    override fun getAuthorities(): Collection<GrantedAuthority> = role.getAuthorities()
+
+    override fun getPassword(): String = "$id$email"
+
+    override fun getUsername(): String = id.toString()
+
+    override fun isAccountNonExpired(): Boolean = true
+
+    override fun isAccountNonLocked(): Boolean = true
+
+    override fun isCredentialsNonExpired(): Boolean = true
+
+    override fun isEnabled(): Boolean = true
 
     companion object {
         fun createMember(params: MemberParam): Member {

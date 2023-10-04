@@ -1,112 +1,96 @@
 package healthiee.rest.lib.authority
 
 import io.jsonwebtoken.Claims
-import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.Jwts
-import io.jsonwebtoken.MalformedJwtException
 import io.jsonwebtoken.SignatureAlgorithm
-import io.jsonwebtoken.UnsupportedJwtException
 import io.jsonwebtoken.io.Decoders
 import io.jsonwebtoken.security.Keys
-import io.jsonwebtoken.security.SecurityException
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
-import org.springframework.security.core.Authentication
-import org.springframework.security.core.GrantedAuthority
-import org.springframework.security.core.authority.SimpleGrantedAuthority
-import org.springframework.security.core.userdetails.User
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.stereotype.Component
+import java.security.Key
 import java.util.*
 
 @Component
-class JwtTokenProvider {
-
+class JwtTokenProvider(
     @Value("\${jwt.secret}")
-    lateinit var secretKey: String
+    private val secretKey: String,
+    @Value("\${jwt.access-token-expiration}")
+    private val accessTokenExpiration: Long,
+    @Value("\${jwt.refresh-token-expiration}")
+    private val refreshTokenExpiration: Long,
+) {
 
-    private val key by lazy {
-        Keys.hmacShaKeyFor(Decoders.BASE64.decode(secretKey))
+    fun extractUsername(token: String): String? = extractClaim(token, Claims::getSubject)
+
+    fun <T> extractClaim(token: String, claimsResolver: (Claims) -> T): T {
+        val claims = extractAllClaims(token)
+        return claimsResolver.invoke(claims)
     }
 
-    fun createAccessToken(authentication: Authentication): String =
-        createToken(authentication, TokenType.ACCESS_TOKEN)
+    fun generateToken(userDetails: UserDetails): String = generateToken(
+        mapOf("type" to TokenType.ACCESS_TOKEN.name.lowercase()),
+        userDetails,
+    )
 
-    fun createRefreshToken(authentication: Authentication, claims: MutableMap<String, Any>): String =
-        createToken(authentication, TokenType.REFRESH_TOKEN, claims)
-
-    fun createRegisterToken(authentication: Authentication, claims: MutableMap<String, Any>): String =
-        createToken(authentication, TokenType.REGISTER_TOKEN, claims)
-
-    private fun createToken(
-        authentication: Authentication,
-        type: TokenType,
-        claims: MutableMap<String, Any> = mutableMapOf(),
+    fun generateToken(
+        extraClaims: Map<String, Any>,
+        userDetails: UserDetails,
     ): String {
-        if (authentication.authorities.isNotEmpty()) {
-            val authorities: String = authentication
-                .authorities
-                .joinToString(",", transform = GrantedAuthority::getAuthority)
-            claims["auth"] = authorities
-        }
-        claims["type"] = type.name.lowercase()
-        claims["id"] = authentication.name
-
-        val now = Date()
-        val tokenExpiration = Date(now.time + type.expiration)
-
-        return Jwts.builder()
-            .setSubject(authentication.name)
-            .setClaims(claims)
-            .setIssuedAt(now)
-            .setExpiration(tokenExpiration)
-            .signWith(key, SignatureAlgorithm.HS256)
-            .compact()
+        val updatedClaims = extraClaims.toMutableMap().apply { put("type", TokenType.ACCESS_TOKEN.name.lowercase()) }
+        return buildToken(updatedClaims, userDetails, accessTokenExpiration)
     }
 
-    fun getAuthentication(token: String): Authentication {
-        val claims: Claims = getClaims(token)
-        val auth = claims["auth"] ?: throw RuntimeException("잘못된 토큰입니다.")
-        val id = claims["id"] ?: throw RuntimeException("잘못된 토큰입니다.")
+    fun generateRefreshToken(userDetails: UserDetails): String = generateRefreshToken(
+        mapOf("type" to TokenType.REFRESH_TOKEN.name.lowercase()),
+        userDetails,
+    )
 
-        val authorities = (auth as String)
-            .split(",")
-            .map { SimpleGrantedAuthority(it) }
-
-        val principal: UserDetails = User(id.toString(), "", authorities)
-
-        return UsernamePasswordAuthenticationToken(principal, "", authorities)
+    fun generateRefreshToken(
+        extraClaims: Map<String, Any>,
+        userDetails: UserDetails,
+    ): String {
+        val updatedClaims = extraClaims.toMutableMap().apply { put("type", TokenType.REFRESH_TOKEN.name.lowercase()) }
+        return buildToken(updatedClaims, userDetails, refreshTokenExpiration)
     }
 
-    fun validateToken(token: String): Boolean {
-        try {
-            getClaims(token)
-            return true
-        } catch (e: Exception) {
-            when (e) {
-                is SecurityException -> {} // Invalid JWT Token
-                is MalformedJwtException -> {} // Invalid JWT Token
-                is ExpiredJwtException -> {} // Expired JWT Token
-                is UnsupportedJwtException -> {} // Unsupported JWT Token
-                is IllegalArgumentException -> {} // JWT claims string is empty
-                else -> {} // else
-            }
-            println(e.message)
-        }
-        return false
+    private fun buildToken(
+        extraClaims: Map<String, Any>,
+        userDetails: UserDetails,
+        expiration: Long,
+    ): String = Jwts.builder()
+        .setClaims(extraClaims)
+        .setSubject(userDetails.username)
+        .setIssuedAt(Date(System.currentTimeMillis()))
+        .setExpiration(Date(System.currentTimeMillis() + expiration))
+        .signWith(getSignInKey(), SignatureAlgorithm.HS256)
+        .compact()
+
+    fun isTokenValid(token: String, userDetails: UserDetails): Boolean {
+        val username = extractUsername(token)
+        return (username == userDetails.username) && !isTokenExpired(token)
     }
 
-    fun getClaims(token: String): Claims =
+    private fun isTokenExpired(token: String): Boolean {
+        return extractExpiration(token).before(Date())
+    }
+
+    private fun extractExpiration(token: String): Date =
+        extractClaim(token, Claims::getExpiration)
+
+    private fun extractAllClaims(token: String): Claims =
         Jwts.parserBuilder()
-            .setSigningKey(key)
+            .setSigningKey(getSignInKey())
             .build()
             .parseClaimsJws(token)
             .body
 
-    enum class TokenType(val expiration: Long) {
-        ACCESS_TOKEN(1000 * 60 * 30), // 30분
-        REFRESH_TOKEN(1000 * 60 * 60 * 24 * 14), // 2주
-        REGISTER_TOKEN(1000 * 60 * 60), // 1시간
-    }
+    private fun getSignInKey(): Key =
+        Keys.hmacShaKeyFor(Decoders.BASE64.decode(secretKey))
 
+}
+
+enum class TokenType {
+    ACCESS_TOKEN,
+    REFRESH_TOKEN,
 }

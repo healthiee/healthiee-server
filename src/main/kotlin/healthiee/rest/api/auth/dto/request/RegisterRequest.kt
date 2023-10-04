@@ -5,9 +5,9 @@ import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 
 data class RegisterRequest(
-    @field:NotBlank(message = "The registerToken is required")
-    @JsonProperty("registerToken")
-    private val _registerToken: String?,
+    @field:NotBlank(message = "The code is required")
+    @JsonProperty("code")
+    private val _code: String?,
     @field:NotBlank(message = "The name is required")
     @JsonProperty("name")
     private val _name: String?,
@@ -20,8 +20,8 @@ data class RegisterRequest(
     @JsonProperty("workouts")
     private val _workouts: List<String>?,
 ) {
-    val registerToken: String
-        get() = _registerToken!!
+    val code: String
+        get() = _code!!
     val name: String
         get() = _name!!
     val nickname: String
