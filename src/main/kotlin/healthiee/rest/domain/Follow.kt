@@ -1,5 +1,6 @@
 package healthiee.rest.domain
 
+import healthiee.rest.domain.member.Member
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType

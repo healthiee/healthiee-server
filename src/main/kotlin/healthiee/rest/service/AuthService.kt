@@ -11,20 +11,16 @@ import healthiee.rest.api.auth.dto.response.VerifyCodeResponse
 import healthiee.rest.api.base.FailureType
 import healthiee.rest.api.base.ServiceResponse
 import healthiee.rest.domain.EmailAuth
-import healthiee.rest.domain.Member
-import healthiee.rest.domain.MemberRole
 import healthiee.rest.domain.Token
+import healthiee.rest.domain.member.Member
 import healthiee.rest.lib.authority.JwtTokenProvider
-import healthiee.rest.lib.authority.JwtTokenProvider.TokenType
+import healthiee.rest.lib.authority.TokenType
 import healthiee.rest.lib.mail.MailSender
 import healthiee.rest.repository.EmailAuthRepository
 import healthiee.rest.repository.MemberRepository
-import healthiee.rest.repository.MemberRoleRepository
 import healthiee.rest.repository.TokenRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.repository.findByIdOrNull
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Duration
@@ -36,10 +32,8 @@ import java.util.*
 class AuthService(
     @Autowired private val emailAuthRepository: EmailAuthRepository,
     @Autowired private val memberRepository: MemberRepository,
-    @Autowired private val memberRoleRepository: MemberRoleRepository,
     @Autowired private val tokenRepository: TokenRepository,
     @Autowired private val mailSender: MailSender,
-    @Autowired private val authenticationManagerBuilder: AuthenticationManagerBuilder,
     @Autowired private val jwtTokenProvider: JwtTokenProvider,
 ) {
 
@@ -67,18 +61,12 @@ class AuthService(
         val findMember = memberRepository.findByEmail(findEmailAuth.email)
         findMember ?: return ServiceResponse.Failure(FailureType.NOT_FOUND_MEMBER)
 
-        val accessTokenAuth = authenticationManagerBuilder
-            .`object`
-            .authenticate(UsernamePasswordAuthenticationToken(findMember.id, ""))
-        val accessToken = jwtTokenProvider.createAccessToken(accessTokenAuth)
-
         val token = Token.createToken(findMember)
         tokenRepository.save(token)
 
-        val refreshTokenAuth = authenticationManagerBuilder
-            .`object`
-            .authenticate(UsernamePasswordAuthenticationToken(token.id, ""))
-        val refreshToken = jwtTokenProvider.createRefreshToken(refreshTokenAuth, mutableMapOf("rotationCounter" to 1))
+        val refreshClaims = mapOf("rotationCounter" to 1, "tokenId" to token.id)
+        val accessToken = jwtTokenProvider.generateToken(findMember)
+        val refreshToken = jwtTokenProvider.generateRefreshToken(refreshClaims, findMember)
 
         findEmailAuth.used()
 
@@ -98,54 +86,36 @@ class AuthService(
         val diff = Duration.between(findEmailAuth.createdDate, LocalDateTime.now())
         if (diff.toHours() >= 24) return ServiceResponse.Failure(FailureType.NOT_FOUND_CODE)
 
-        val registerTokenAuth = authenticationManagerBuilder
-            .`object`
-            .authenticate(UsernamePasswordAuthenticationToken(findEmailAuth.email, ""))
-        val claims = mutableMapOf<String, Any>("authId" to findEmailAuth.id)
-        val registerToken = jwtTokenProvider.createRegisterToken(registerTokenAuth, claims)
-
-        return ServiceResponse.Success(VerifyCodeResponse(findEmailAuth.email, registerToken))
+        return ServiceResponse.Success(VerifyCodeResponse(findEmailAuth.email))
     }
 
     @Transactional
     fun register(request: RegisterRequest): ServiceResponse<AuthenticationDto> {
-        val claims = jwtTokenProvider.getClaims(request.registerToken)
-        if (claims["type"] != TokenType.REGISTER_TOKEN.name.lowercase()) return ServiceResponse.Failure(FailureType.INVALID_REGISTER_TOKEN)
-        val email: String =
-            (claims["id"] as? String) ?: return ServiceResponse.Failure(FailureType.INVALID_REGISTER_TOKEN)
-        val emailAuthId: Int =
-            (claims["authId"] as? Int) ?: return ServiceResponse.Failure(FailureType.INVALID_REGISTER_TOKEN)
-        val findEmailAuth =
-            emailAuthRepository.findByIdOrNull(emailAuthId.toLong())
-                ?: return ServiceResponse.Failure(FailureType.INVALID_REGISTER_TOKEN)
+        val findEmailAuth = emailAuthRepository.findByCode(UUID.fromString(request.code))
+        findEmailAuth ?: return ServiceResponse.Failure(FailureType.NOT_FOUND_CODE)
+        if (findEmailAuth.disabled) return ServiceResponse.Failure(FailureType.NOT_FOUND_CODE)
+
+        val diff = Duration.between(findEmailAuth.createdDate, LocalDateTime.now())
+        if (diff.toHours() >= 24) return ServiceResponse.Failure(FailureType.NOT_FOUND_CODE)
 
         val member = Member.createMember(
             Member.MemberParam(
-                email,
-                request.name,
-                request.nickname,
-                request.bio,
-                request.profileUrl,
-                request.workouts,
+                email = findEmailAuth.email,
+                name = request.name,
+                nickname = request.nickname,
+                bio = request.bio,
+                profileUrl = request.profileUrl,
+                workouts = request.workouts,
             )
         )
         memberRepository.save(member)
 
-        val memberRole = MemberRole.createMemberRole(member)
-        memberRoleRepository.save(memberRole)
-
-        val accessTokenAuth = authenticationManagerBuilder
-            .`object`
-            .authenticate(UsernamePasswordAuthenticationToken(member.id, ""))
-        val accessToken = jwtTokenProvider.createAccessToken(accessTokenAuth)
-
         val token = Token.createToken(member)
         tokenRepository.save(token)
 
-        val refreshTokenAuth = authenticationManagerBuilder
-            .`object`
-            .authenticate(UsernamePasswordAuthenticationToken(token.id, ""))
-        val refreshToken = jwtTokenProvider.createRefreshToken(refreshTokenAuth, mutableMapOf("rotationCounter" to 1))
+        val refreshClaims = mapOf("rotationCounter" to 1, "tokenId" to token.id)
+        val accessToken = jwtTokenProvider.generateToken(member)
+        val refreshToken = jwtTokenProvider.generateRefreshToken(refreshClaims, member)
 
         findEmailAuth.used()
 
@@ -159,15 +129,26 @@ class AuthService(
 
     @Transactional
     fun refreshToken(request: RefreshTokenRequest): ServiceResponse<AuthenticationDto> {
-        val claims = jwtTokenProvider.getClaims(request.refreshToken)
-        if (claims["type"] != TokenType.REFRESH_TOKEN.name.lowercase()) return ServiceResponse.Failure(FailureType.INVALID_REFRESH_TOKEN)
-        val tokenId: UUID =
-            UUID.fromString(
-                (claims["id"] as? String) ?: return ServiceResponse.Failure(FailureType.INVALID_REFRESH_TOKEN)
-            )
-        val rotationCounter: Int =
-            (claims["rotationCounter"] as? Int) ?: return ServiceResponse.Failure(FailureType.INVALID_REFRESH_TOKEN)
-        val findToken = tokenRepository.findByIdIncludeMember(tokenId)
+        val type: String = jwtTokenProvider.extractClaim(request.refreshToken) {
+            it.get("type", String::class.java)
+        } ?: return ServiceResponse.Failure(FailureType.INVALID_REFRESH_TOKEN)
+        val tokenId: String = jwtTokenProvider.extractClaim(request.refreshToken) {
+            it.get("tokenId", String::class.java)
+        } ?: return ServiceResponse.Failure(FailureType.INVALID_REFRESH_TOKEN)
+        val memberId: String = jwtTokenProvider.extractUsername(request.refreshToken) ?: return ServiceResponse.Failure(
+            FailureType.INVALID_REFRESH_TOKEN
+        )
+        val rotationCounter: Int = jwtTokenProvider.extractClaim(request.refreshToken) {
+            it.get("rotationCounter", Integer::class.java)
+        }?.toInt() ?: return ServiceResponse.Failure(FailureType.INVALID_REFRESH_TOKEN)
+
+        if (type != TokenType.REFRESH_TOKEN.name.lowercase()) {
+            return ServiceResponse.Failure(FailureType.INVALID_REFRESH_TOKEN)
+        }
+
+        val findMember = memberRepository.findByIdOrNull(UUID.fromString(memberId))
+            ?: return ServiceResponse.Failure(FailureType.INVALID_REFRESH_TOKEN)
+        val findToken = tokenRepository.findByIdIncludeMember(UUID.fromString(tokenId))
             ?: return ServiceResponse.Failure(FailureType.INVALID_REFRESH_TOKEN)
         if (findToken.blocked) return ServiceResponse.Failure(FailureType.INVALID_REFRESH_TOKEN)
         if (findToken.rotationCounter != rotationCounter) {
@@ -177,22 +158,13 @@ class AuthService(
 
         findToken.increaseRotationCounter()
 
-        val accessTokenAuth = authenticationManagerBuilder
-            .`object`
-            .authenticate(UsernamePasswordAuthenticationToken(findToken.member.id, ""))
-        val accessToken = jwtTokenProvider.createAccessToken(accessTokenAuth)
-
-        val refreshTokenAuth = authenticationManagerBuilder
-            .`object`
-            .authenticate(UsernamePasswordAuthenticationToken(findToken.id, ""))
-        val refreshToken = jwtTokenProvider.createRefreshToken(
-            refreshTokenAuth,
-            mutableMapOf("rotationCounter" to findToken.rotationCounter)
-        )
+        val refreshClaims = mapOf("rotationCounter" to findToken.rotationCounter, "tokenId" to tokenId)
+        val accessToken = jwtTokenProvider.generateToken(findMember)
+        val refreshToken = jwtTokenProvider.generateRefreshToken(refreshClaims, findMember)
 
         return ServiceResponse.Success(
             AuthenticationDto(
-                findToken.member.id,
+                findMember.id,
                 TokenDto(accessToken, refreshToken)
             )
         )
