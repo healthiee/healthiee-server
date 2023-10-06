@@ -79,13 +79,3 @@ class Member(params: MemberParam) : BaseEntity(), UserDetails {
     }
 
 }
-
-fun Member.toDto() = MemberDto(
-    id,
-    email,
-    name,
-    nickname,
-    bio,
-    profileUrl,
-    workouts,
-)
