@@ -1,4 +1,4 @@
-package healthiee.rest.repository
+package healthiee.rest.repository.member
 
 import healthiee.rest.domain.member.Member
 import org.springframework.data.jpa.repository.JpaRepository

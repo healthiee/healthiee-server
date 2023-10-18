@@ -1,6 +1,6 @@
-package healthiee.rest.repository
+package healthiee.rest.repository.auth
 
-import healthiee.rest.domain.EmailAuth
+import healthiee.rest.domain.auth.EmailAuth
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 import java.util.*

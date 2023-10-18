@@ -1,7 +1,7 @@
 package healthiee.rest.config
 
 import healthiee.rest.lib.authority.JwtAuthenticationFilter
-import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.autoconfigure.security.servlet.PathRequest.toH2Console
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.authentication.AuthenticationProvider
@@ -17,8 +17,8 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
 class SecurityConfig(
-    @Autowired private val jwtAuthenticationFilter: JwtAuthenticationFilter,
-    @Autowired private val authenticationProvider: AuthenticationProvider,
+    private val jwtAuthenticationFilter: JwtAuthenticationFilter,
+    private val authenticationProvider: AuthenticationProvider,
 ) {
 
     @Bean
@@ -29,7 +29,7 @@ class SecurityConfig(
             .authorizeHttpRequests {
                 it.requestMatchers(
                     AntPathRequestMatcher("/v1/auth/**"),
-                    AntPathRequestMatcher("/h2-console/**"),
+                    toH2Console(),
                 )
                     .permitAll()
                     .anyRequest()

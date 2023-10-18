@@ -1,6 +1,6 @@
 package healthiee.rest.service
 
-import healthiee.rest.repository.MemberRepository
+import healthiee.rest.repository.member.MemberRepository
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -13,10 +13,10 @@ import org.springframework.transaction.annotation.Transactional
 class MemberServiceTest {
 
     @Autowired
-    lateinit var memberService: MemberService
+    private lateinit var memberService: MemberService
 
     @Autowired
-    lateinit var memberRepository: MemberRepository
+    private lateinit var memberRepository: MemberRepository
 
     @Test
     @DisplayName("회원가입 테스트")

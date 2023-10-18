@@ -1,4 +1,4 @@
-package healthiee.rest.domain
+package healthiee.rest.domain.post
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity

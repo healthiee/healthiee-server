@@ -1,6 +1,6 @@
-package healthiee.rest.repository
+package healthiee.rest.repository.follow
 
-import healthiee.rest.domain.Follow
+import healthiee.rest.domain.follow.Follow
 import healthiee.rest.domain.member.Member
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository

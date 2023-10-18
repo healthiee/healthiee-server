@@ -11,7 +11,8 @@ enum class RoleType(private val permissions: Set<Permission>) {
             Permission.MEMBER_CREATE,
             Permission.MEMBER_DELETE,
         )
-    );
+    ),
+    ADMIN(emptySet());
 
     fun getAuthorities(): List<SimpleGrantedAuthority> =
         mutableListOf(SimpleGrantedAuthority("ROLE_${this.name}")).apply {

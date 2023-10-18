@@ -1,9 +1,8 @@
 package healthiee.rest.api.member
 
-import healthiee.rest.lib.response.BaseResponse
 import healthiee.rest.api.member.dto.MemberDto
+import healthiee.rest.lib.response.BaseResponse
 import healthiee.rest.service.MemberService
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
@@ -13,9 +12,9 @@ import org.springframework.web.bind.annotation.RestController
 import java.util.*
 
 @RestController
-@PreAuthorize("hasRole('MEMBER')")
+@PreAuthorize("hasRole('MEMBER') or hasRole('ADMIN')")
 class MemberApiController(
-    @Autowired private val memberService: MemberService,
+    private val memberService: MemberService,
 ) {
 
     @GetMapping("/v1/members/{memberId}")

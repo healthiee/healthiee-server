@@ -1,7 +1,6 @@
 package healthiee.rest.config
 
-import healthiee.rest.repository.MemberRepository
-import org.springframework.beans.factory.annotation.Autowired
+import healthiee.rest.repository.member.MemberRepository
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.data.repository.findByIdOrNull
@@ -18,7 +17,7 @@ import java.util.*
 
 @Configuration
 class ApplicationConfig(
-    @Autowired private val memberRepository: MemberRepository,
+    private val memberRepository: MemberRepository,
 ) {
 
     @Bean

@@ -9,6 +9,7 @@ enum class CommonErrorCode(
     INVALID_PARAMETER(HttpStatus.BAD_REQUEST, "Invalid parameter included"),
     RESOURCE_NOT_FOUND(HttpStatus.NOT_FOUND, "Resource not exists"),
     INTERNAL_SERVER_ERROR(HttpStatus.BAD_REQUEST, "Internal server error"),
+    ACCESS_DENIED(HttpStatus.FORBIDDEN, "Access Denied"),
     ;
 
     override val httpStatus: HttpStatus

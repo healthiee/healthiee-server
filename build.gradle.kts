@@ -3,8 +3,8 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     id("org.springframework.boot") version "3.1.2"
     id("io.spring.dependency-management") version "1.1.2"
-    id("com.google.cloud.tools.jib") version "3.1.4"
     kotlin("jvm") version "1.8.22"
+    kotlin("kapt") version "1.8.22"
     kotlin("plugin.spring") version "1.8.22"
     kotlin("plugin.jpa") version "1.8.22"
 }
@@ -14,28 +14,6 @@ version = "0.1.1"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17
-}
-
-jib {
-    from {
-        image = "eclipse-temurin:17-jdk-alpine"
-    }
-    to {
-        image = "837533427789.dkr.ecr.ap-northeast-2.amazonaws.com/healthiee"
-        tags = setOf("latest", "${project.version}")
-        credHelper = "ecr-login"
-    }
-    container {
-        creationTime = "USE_CURRENT_TIMESTAMP"
-        jvmFlags = listOf(
-            "-Dspring.profiles.active=prod",
-            "-XX:+UseContainerSupport",
-            "-Dserver.port=8080",
-            "-Dfile.encoding=UTF-8",
-        )
-        ports = listOf("8080")
-        user = "nobody:nogroup"
-    }
 }
 
 repositories {
@@ -48,6 +26,11 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
     implementation("org.springframework.boot:spring-boot-starter-security")
+
+    // querydsl
+    api("com.querydsl:querydsl-jpa:5.0.0:jakarta")
+    api("com.querydsl:querydsl-codegen:5.0.0")
+    kapt("com.querydsl:querydsl-apt:5.0.0:jakarta")
 
     implementation("com.h2database:h2")
     implementation("org.postgresql:postgresql:42.6.0")

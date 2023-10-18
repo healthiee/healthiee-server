@@ -10,7 +10,6 @@ import healthiee.rest.api.auth.dto.response.VerifyCodeResponse
 import healthiee.rest.lib.response.BaseResponse
 import healthiee.rest.service.AuthService
 import jakarta.validation.Valid
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -22,7 +21,7 @@ import java.util.*
 
 @RestController
 class AuthApiController(
-    @Autowired private val authService: AuthService,
+    private val authService: AuthService,
 ) {
 
     @PostMapping("/v1/auth")

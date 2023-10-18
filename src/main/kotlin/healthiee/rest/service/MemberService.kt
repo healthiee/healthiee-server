@@ -3,19 +3,16 @@ package healthiee.rest.service
 import healthiee.rest.api.member.dto.MemberDto
 import healthiee.rest.lib.error.ApiException
 import healthiee.rest.lib.error.ApplicationErrorCode.NOT_FOUND_MEMBER
-import healthiee.rest.repository.FollowRepository
-import healthiee.rest.repository.MemberRepository
-import org.springframework.beans.factory.annotation.Autowired
+import healthiee.rest.repository.follow.FollowRepository
+import healthiee.rest.repository.member.MemberRepository
 import org.springframework.data.repository.findByIdOrNull
-import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Service
 @Transactional(readOnly = true)
-@PreAuthorize("hasRole('MEMBER')")
-class MemberService @Autowired constructor(
+class MemberService(
     val memberRepository: MemberRepository,
     val followRepository: FollowRepository,
 ) {

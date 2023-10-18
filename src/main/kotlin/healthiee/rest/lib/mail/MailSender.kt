@@ -6,7 +6,6 @@ import com.amazonaws.services.simpleemail.model.Content
 import com.amazonaws.services.simpleemail.model.Destination
 import com.amazonaws.services.simpleemail.model.Message
 import com.amazonaws.services.simpleemail.model.SendEmailRequest
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import org.thymeleaf.context.Context
 import org.thymeleaf.spring6.SpringTemplateEngine
@@ -14,8 +13,8 @@ import java.util.*
 
 @Component
 class MailSender(
-    @Autowired private val templateEngine: SpringTemplateEngine,
-    @Autowired private val ses: AmazonSimpleEmailService,
+    private val templateEngine: SpringTemplateEngine,
+    private val ses: AmazonSimpleEmailService,
 ) {
 
     fun send(to: String, registered: Boolean, code: UUID) {

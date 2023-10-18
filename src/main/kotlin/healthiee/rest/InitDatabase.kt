@@ -1,10 +1,10 @@
 package healthiee.rest
 
-import healthiee.rest.domain.EmailAuth
+import healthiee.rest.domain.auth.EmailAuth
 import healthiee.rest.domain.member.Member
-import healthiee.rest.repository.EmailAuthRepository
-import healthiee.rest.repository.MemberRepository
-import org.springframework.beans.factory.annotation.Autowired
+import healthiee.rest.domain.member.RoleType
+import healthiee.rest.repository.auth.EmailAuthRepository
+import healthiee.rest.repository.member.MemberRepository
 import org.springframework.boot.ApplicationArguments
 import org.springframework.boot.ApplicationRunner
 import org.springframework.security.crypto.password.PasswordEncoder
@@ -12,20 +12,45 @@ import org.springframework.stereotype.Component
 import java.util.*
 
 @Component
-class InitDatabase : ApplicationRunner {
-
-    @Autowired
-    private lateinit var memberRepository: MemberRepository
-
-    @Autowired
-    private lateinit var emailAuthRepository: EmailAuthRepository
-
-    @Autowired
-    private lateinit var passwordEncoder: PasswordEncoder
+class InitDatabase(
+    private val memberRepository: MemberRepository,
+    private val emailAuthRepository: EmailAuthRepository,
+    private val passwordEncoder: PasswordEncoder,
+) : ApplicationRunner {
 
     override fun run(args: ApplicationArguments?) {
+        saveAdmin()
         saveMembers()
         saveEmailAuths()
+    }
+
+    private fun saveAdmin() {
+        val adminEmail = "admin@healthiee.net"
+        val adminNickname = "admin"
+
+        if (memberRepository.findByEmail(adminEmail) == null) {
+            memberRepository.save(
+                Member.createMember(
+                    Member.MemberParam(
+                        id = UUID.fromString("f31ab48f-ae64-45dc-a6f5-969baefa0d2a"),
+                        email = adminEmail,
+                        password = passwordEncoder.encode(adminNickname),
+                        name = adminNickname,
+                        nickname = adminNickname,
+                        roleType = RoleType.ADMIN,
+                    )
+                )
+            )
+        }
+
+        if (emailAuthRepository.findByEmail(adminEmail) == null) {
+            emailAuthRepository.save(
+                EmailAuth.createEmailAuth(
+                    adminEmail,
+                    UUID.fromString("ae8ba0f3-6717-4c54-a76f-db2e92bdfd7f"),
+                )
+            )
+        }
     }
 
     private fun saveMembers() {

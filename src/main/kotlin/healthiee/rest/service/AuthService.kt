@@ -8,8 +8,8 @@ import healthiee.rest.api.auth.dto.request.RefreshTokenRequest
 import healthiee.rest.api.auth.dto.request.RegisterRequest
 import healthiee.rest.api.auth.dto.response.AuthResponse
 import healthiee.rest.api.auth.dto.response.VerifyCodeResponse
-import healthiee.rest.domain.EmailAuth
-import healthiee.rest.domain.Token
+import healthiee.rest.domain.auth.EmailAuth
+import healthiee.rest.domain.auth.Token
 import healthiee.rest.domain.member.Member
 import healthiee.rest.lib.authority.JwtTokenProvider
 import healthiee.rest.lib.authority.TokenType
@@ -18,10 +18,9 @@ import healthiee.rest.lib.error.ApplicationErrorCode.FORBIDDEN_INVALID_REFRESH_T
 import healthiee.rest.lib.error.ApplicationErrorCode.NOT_FOUND_CODE
 import healthiee.rest.lib.error.ApplicationErrorCode.NOT_FOUND_MEMBER
 import healthiee.rest.lib.mail.MailSender
-import healthiee.rest.repository.EmailAuthRepository
-import healthiee.rest.repository.MemberRepository
-import healthiee.rest.repository.TokenRepository
-import org.springframework.beans.factory.annotation.Autowired
+import healthiee.rest.repository.auth.EmailAuthRepository
+import healthiee.rest.repository.member.MemberRepository
+import healthiee.rest.repository.auth.TokenRepository
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
@@ -35,13 +34,13 @@ import java.util.*
 @Service
 @Transactional(readOnly = true)
 class AuthService(
-    @Autowired private val emailAuthRepository: EmailAuthRepository,
-    @Autowired private val memberRepository: MemberRepository,
-    @Autowired private val tokenRepository: TokenRepository,
-    @Autowired private val mailSender: MailSender,
-    @Autowired private val jwtTokenProvider: JwtTokenProvider,
-    @Autowired private val passwordEncoder: PasswordEncoder,
-    @Autowired private val authenticationManager: AuthenticationManager,
+    private val emailAuthRepository: EmailAuthRepository,
+    private val memberRepository: MemberRepository,
+    private val tokenRepository: TokenRepository,
+    private val mailSender: MailSender,
+    private val jwtTokenProvider: JwtTokenProvider,
+    private val passwordEncoder: PasswordEncoder,
+    private val authenticationManager: AuthenticationManager,
 ) {
 
     @Transactional

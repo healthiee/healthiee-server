@@ -1,4 +1,4 @@
-package healthiee.rest.domain
+package healthiee.rest.domain.auth
 
 import healthiee.rest.domain.base.BaseEntity
 import healthiee.rest.domain.member.Member

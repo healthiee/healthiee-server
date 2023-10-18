@@ -1,7 +1,7 @@
 package healthiee.rest.service
 
-import healthiee.rest.repository.EmailAuthRepository
-import healthiee.rest.repository.MemberRepository
+import healthiee.rest.repository.auth.EmailAuthRepository
+import healthiee.rest.repository.member.MemberRepository
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -9,7 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.transaction.annotation.Transactional
 
 @SpringBootTest
-@Transactional
+@Transactional(readOnly = true)
 class AuthServiceTest {
 
     @Autowired

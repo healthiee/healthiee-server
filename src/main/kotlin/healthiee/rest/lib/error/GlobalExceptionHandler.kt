@@ -4,6 +4,7 @@ import healthiee.rest.lib.response.BaseResponse
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatusCode
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.validation.BindException
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
@@ -27,6 +28,12 @@ class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
         return handleExceptionInternal(CommonErrorCode.INVALID_PARAMETER, e.localizedMessage)
     }
 
+    @ExceptionHandler(AccessDeniedException::class)
+    fun handleAccessDenied(e: AccessDeniedException): ResponseEntity<Any> {
+        println("AccessDeniedException: $e")
+        return handleExceptionInternal(CommonErrorCode.ACCESS_DENIED)
+    }
+
     override fun handleMethodArgumentNotValid(
         ex: MethodArgumentNotValidException,
         headers: HttpHeaders,
@@ -39,6 +46,7 @@ class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
 
     @ExceptionHandler(Exception::class)
     fun handleAllException(e: Exception): ResponseEntity<Any> {
+        println("Exception: $e")
         return handleExceptionInternal(CommonErrorCode.INTERNAL_SERVER_ERROR)
     }
 
