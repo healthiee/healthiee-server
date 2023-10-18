@@ -14,6 +14,7 @@ import java.util.*
 class EmailAuth(
     @Column(nullable = false)
     val email: String,
+    _code: UUID,
 ) : BaseEntity() {
 
     @Id
@@ -22,7 +23,7 @@ class EmailAuth(
     val id: Long = 0L
 
     @Column(unique = true, nullable = false)
-    val code: UUID = UUID.randomUUID()
+    val code: UUID = _code
 
     @Column
     var disabled: Boolean = false
@@ -33,8 +34,10 @@ class EmailAuth(
     }
 
     companion object {
-        fun createEmailAuth(email: String): EmailAuth =
-            EmailAuth(email)
+        fun createEmailAuth(
+            email: String,
+            code: UUID = UUID.randomUUID(),
+        ): EmailAuth = EmailAuth(email, code)
 
     }
 

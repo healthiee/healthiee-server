@@ -49,6 +49,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
     implementation("org.springframework.boot:spring-boot-starter-security")
 
+    implementation("com.h2database:h2")
     implementation("org.postgresql:postgresql:42.6.0")
     implementation("com.amazonaws:aws-java-sdk-ses:1.12.472")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")

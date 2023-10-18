@@ -1,6 +1,5 @@
 package healthiee.rest.domain.member
 
-import healthiee.rest.api.member.dto.MemberDto
 import healthiee.rest.domain.base.BaseEntity
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
@@ -18,11 +17,14 @@ class Member(params: MemberParam) : BaseEntity(), UserDetails {
 
     @Id
     @Column(name = "member_id")
-    val id: UUID = UUID.randomUUID()
+    val id: UUID = params.id
 
     @Column(unique = true, nullable = false)
     var email: String = params.email
         private set
+
+    @Column(name = "password", nullable = false)
+    val jwtPassword: String = params.password
 
     @Column(nullable = false)
     var name: String = params.name
@@ -49,7 +51,9 @@ class Member(params: MemberParam) : BaseEntity(), UserDetails {
         private set
 
     data class MemberParam(
+        val id: UUID = UUID.randomUUID(),
         val email: String,
+        val password: String,
         val name: String,
         val nickname: String,
         val roleType: RoleType = RoleType.MEMBER,
@@ -60,7 +64,7 @@ class Member(params: MemberParam) : BaseEntity(), UserDetails {
 
     override fun getAuthorities(): Collection<GrantedAuthority> = role.getAuthorities()
 
-    override fun getPassword(): String = "$id$email"
+    override fun getPassword(): String = jwtPassword
 
     override fun getUsername(): String = id.toString()
 

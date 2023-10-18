@@ -21,11 +21,6 @@ class JwtAuthenticationFilter @Autowired constructor(
         response: HttpServletResponse,
         filterChain: FilterChain,
     ) {
-        if (request.servletPath.contains("/v1/auth")) {
-            filterChain.doFilter(request, response)
-            return
-        }
-
         val authHeader = request.getHeader("Authorization")
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response)
