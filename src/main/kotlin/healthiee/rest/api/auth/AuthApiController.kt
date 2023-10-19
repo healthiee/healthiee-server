@@ -11,12 +11,15 @@ import healthiee.rest.lib.response.BaseResponse
 import healthiee.rest.service.AuthService
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.multipart.MultipartFile
 import java.util.*
 
 @RestController
@@ -54,12 +57,18 @@ class AuthApiController(
         )
     }
 
-    @PostMapping("/v1/auth/register")
-    fun register(@Valid @RequestBody request: RegisterRequest): ResponseEntity<BaseResponse<AuthenticationDto>> {
+    @PostMapping(
+        value = ["/v1/auth/register"],
+        consumes = [MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE],
+    )
+    fun register(
+        @Valid @RequestPart("data") request: RegisterRequest,
+        @RequestPart("image") image: MultipartFile?,
+    ): ResponseEntity<BaseResponse<AuthenticationDto>> {
         return ResponseEntity.ok(
             BaseResponse(
                 code = HttpStatus.OK.value(),
-                data = authService.register(request)
+                data = authService.register(request, image)
             )
         )
     }

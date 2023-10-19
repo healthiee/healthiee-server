@@ -11,9 +11,9 @@ import org.springframework.context.annotation.Configuration
 
 @Configuration
 class AWSConfig(
-    @Value("\${aws.access-key}")
+    @Value("\${cloud.aws.access-key}")
     private val accessKey: String,
-    @Value("\${aws.secret-key}")
+    @Value("\${cloud.aws.secret-key}")
     private val secretKey: String,
 ) {
 

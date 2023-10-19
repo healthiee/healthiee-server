@@ -18,15 +18,19 @@ import healthiee.rest.lib.error.ApplicationErrorCode.FORBIDDEN_INVALID_REFRESH_T
 import healthiee.rest.lib.error.ApplicationErrorCode.NOT_FOUND_CODE
 import healthiee.rest.lib.error.ApplicationErrorCode.NOT_FOUND_MEMBER
 import healthiee.rest.lib.mail.MailSender
+import healthiee.rest.lib.uploader.MediaDomainType
+import healthiee.rest.lib.uploader.MediaType
+import healthiee.rest.lib.uploader.S3Uploader
 import healthiee.rest.repository.auth.EmailAuthRepository
-import healthiee.rest.repository.member.MemberRepository
 import healthiee.rest.repository.auth.TokenRepository
+import healthiee.rest.repository.member.MemberRepository
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.web.multipart.MultipartFile
 import java.time.Duration
 import java.time.LocalDateTime
 import java.util.*
@@ -41,6 +45,7 @@ class AuthService(
     private val jwtTokenProvider: JwtTokenProvider,
     private val passwordEncoder: PasswordEncoder,
     private val authenticationManager: AuthenticationManager,
+    private val s3Uploader: S3Uploader,
 ) {
 
     @Transactional
@@ -98,13 +103,18 @@ class AuthService(
     }
 
     @Transactional
-    fun register(request: RegisterRequest): AuthenticationDto {
+    fun register(request: RegisterRequest, image: MultipartFile?): AuthenticationDto {
         val findEmailAuth = emailAuthRepository.findByCode(UUID.fromString(request.code))
         findEmailAuth ?: throw ApiException(NOT_FOUND_CODE)
         if (findEmailAuth.disabled) throw ApiException(NOT_FOUND_CODE)
 
         val diff = Duration.between(findEmailAuth.createdDate, LocalDateTime.now())
         if (diff.toHours() >= 24) throw ApiException(NOT_FOUND_CODE)
+
+        var profileUrl: String? = null
+        if (image != null && !image.isEmpty) {
+            profileUrl = s3Uploader.upload(image, MediaType.IMAGE, MediaDomainType.PROFILE_IMAGE)
+        }
 
         val member = Member.createMember(
             Member.MemberParam(
@@ -113,8 +123,8 @@ class AuthService(
                 name = request.name,
                 nickname = request.nickname,
                 bio = request.bio,
-                profileUrl = request.profileUrl,
-                workouts = request.workouts,
+                profileUrl = profileUrl,
+                workouts = request.workouts ?: listOf(),
             )
         )
         memberRepository.save(member)

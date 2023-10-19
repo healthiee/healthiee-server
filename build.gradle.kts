@@ -32,6 +32,7 @@ dependencies {
     api("com.querydsl:querydsl-codegen:5.0.0")
     kapt("com.querydsl:querydsl-apt:5.0.0:jakarta")
 
+    implementation("org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE")
     implementation("com.h2database:h2")
     implementation("org.postgresql:postgresql:42.6.0")
     implementation("com.amazonaws:aws-java-sdk-ses:1.12.472")
