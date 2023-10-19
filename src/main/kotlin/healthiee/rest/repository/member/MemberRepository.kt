@@ -10,4 +10,6 @@ interface MemberRepository : JpaRepository<Member, UUID> {
 
     fun findByEmail(email: String): Member?
 
+    fun findByNickname(nickname: String): Member?
+
 }

@@ -29,6 +29,7 @@ class SecurityConfig(
             .authorizeHttpRequests {
                 it.requestMatchers(
                     AntPathRequestMatcher("/v1/auth/**"),
+                    AntPathRequestMatcher("/v1/members/**/check"),
                     toH2Console(),
                 )
                     .permitAll()
