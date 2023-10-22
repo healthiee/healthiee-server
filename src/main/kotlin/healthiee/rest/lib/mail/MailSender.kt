@@ -19,7 +19,8 @@ class MailSender(
 
     fun send(to: String, registered: Boolean, code: UUID) {
         val context = Context()
-        context.setVariable("code", code)
+        val url = "https://localhost:3000/authcompleted?code=${code}"
+        context.setVariable("url", url)
 
         val body = Content(templateEngine.process("code", context))
         val subjectContent = "[Healthiee] ${if (registered) "로그인" else "회원가입"}"
