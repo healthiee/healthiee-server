@@ -1,9 +1,11 @@
 package healthiee.rest
 
 import healthiee.rest.domain.auth.EmailAuth
+import healthiee.rest.domain.hashtag.Hashtag
 import healthiee.rest.domain.member.Member
 import healthiee.rest.domain.member.RoleType
 import healthiee.rest.repository.auth.EmailAuthRepository
+import healthiee.rest.repository.hashtag.HashtagRepository
 import healthiee.rest.repository.member.MemberRepository
 import org.springframework.boot.ApplicationArguments
 import org.springframework.boot.ApplicationRunner
@@ -15,6 +17,7 @@ import java.util.*
 class InitDatabase(
     private val memberRepository: MemberRepository,
     private val emailAuthRepository: EmailAuthRepository,
+    private val hashtagRepository: HashtagRepository,
     private val passwordEncoder: PasswordEncoder,
 ) : ApplicationRunner {
 
@@ -61,6 +64,10 @@ class InitDatabase(
         val member3Email = "member3@gmail.com"
         val member3Nickname = "member3"
 
+
+        val hashtag = Hashtag.createHashtag("크로스핏")
+        hashtagRepository.save(hashtag)
+
         if (memberRepository.findByEmail(member1Email) == null) {
             memberRepository.save(
                 Member.createMember(
@@ -70,6 +77,7 @@ class InitDatabase(
                         password = passwordEncoder.encode(member1Nickname),
                         name = member1Nickname,
                         nickname = member1Nickname,
+                        workoutHashtags = listOf(hashtag)
                     )
                 )
             )

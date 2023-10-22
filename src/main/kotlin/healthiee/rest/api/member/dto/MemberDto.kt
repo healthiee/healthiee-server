@@ -29,7 +29,7 @@ data class MemberDto(
             params.member.nickname,
             params.member.bio,
             params.member.profileUrl,
-            params.member.workouts,
+            params.member.workoutHashtags.map { it.name },
             params.followingCount,
             params.followerCount,
         )

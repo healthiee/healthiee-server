@@ -10,6 +10,7 @@ import healthiee.rest.api.auth.dto.response.AuthResponse
 import healthiee.rest.api.auth.dto.response.VerifyCodeResponse
 import healthiee.rest.domain.auth.EmailAuth
 import healthiee.rest.domain.auth.Token
+import healthiee.rest.domain.hashtag.Hashtag
 import healthiee.rest.domain.member.Member
 import healthiee.rest.lib.authority.JwtTokenProvider
 import healthiee.rest.lib.authority.TokenType
@@ -23,6 +24,7 @@ import healthiee.rest.lib.uploader.MediaType
 import healthiee.rest.lib.uploader.S3Uploader
 import healthiee.rest.repository.auth.EmailAuthRepository
 import healthiee.rest.repository.auth.TokenRepository
+import healthiee.rest.repository.hashtag.HashtagRepository
 import healthiee.rest.repository.member.MemberRepository
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.authentication.AuthenticationManager
@@ -41,6 +43,7 @@ class AuthService(
     private val emailAuthRepository: EmailAuthRepository,
     private val memberRepository: MemberRepository,
     private val tokenRepository: TokenRepository,
+    private val hashtagRepository: HashtagRepository,
     private val mailSender: MailSender,
     private val jwtTokenProvider: JwtTokenProvider,
     private val passwordEncoder: PasswordEncoder,
@@ -116,6 +119,20 @@ class AuthService(
             profileUrl = s3Uploader.upload(image, MediaType.IMAGE, MediaDomainType.PROFILE_IMAGE)
         }
 
+        val workoutHashtags = mutableListOf<Hashtag>()
+        if (request.workouts != null) {
+            val newHashtags = mutableListOf<Hashtag>()
+            request.workouts.forEach {
+                hashtagRepository.findByName(it)?.let { hashtag ->
+                    workoutHashtags.add(hashtag)
+                } ?: run {
+                    newHashtags.add(Hashtag.createHashtag(it))
+                }
+            }
+            hashtagRepository.saveAll(newHashtags)
+            workoutHashtags.addAll(newHashtags)
+        }
+
         val member = Member.createMember(
             Member.MemberParam(
                 email = findEmailAuth.email,
@@ -124,7 +141,7 @@ class AuthService(
                 nickname = request.nickname,
                 bio = request.bio,
                 profileUrl = profileUrl,
-                workouts = request.workouts ?: listOf(),
+                workoutHashtags = workoutHashtags,
             )
         )
         memberRepository.save(member)
