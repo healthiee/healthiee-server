@@ -30,4 +30,8 @@ class Follow(
     @Column(name = "follow_id")
     val id: Long = 0L
 
+    companion object {
+        fun createFollow(member: Member, targetMember: Member) = Follow(member, targetMember)
+    }
+
 }

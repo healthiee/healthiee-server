@@ -22,6 +22,11 @@ abstract class BaseEntity {
         protected set
 
     @Column(nullable = false)
-    val deleted: Boolean = false
+    var deleted: Boolean = false
+        private set
+
+    fun delete() {
+        deleted = true
+    }
 
 }
