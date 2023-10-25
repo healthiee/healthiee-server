@@ -12,6 +12,7 @@ import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher
+import org.springframework.web.cors.CorsConfiguration
 
 @Configuration
 @EnableWebSecurity
@@ -25,6 +26,16 @@ class SecurityConfig(
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
         http
             .csrf { it.disable() }
+            .cors {
+                it.configurationSource {
+                    return@configurationSource CorsConfiguration().apply {
+                        addAllowedOrigin("*")
+                        addAllowedHeader("*")
+                        addAllowedMethod("*")
+                        allowCredentials = true
+                    }
+                }
+            }
             .headers { it.frameOptions { it.disable() } }
             .authorizeHttpRequests {
                 it.requestMatchers(
