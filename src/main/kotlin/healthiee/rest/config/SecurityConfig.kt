@@ -29,7 +29,7 @@ class SecurityConfig(
             .cors {
                 it.configurationSource {
                     return@configurationSource CorsConfiguration().apply {
-                        addAllowedOrigin("*")
+                        addAllowedOriginPattern("*")
                         addAllowedHeader("*")
                         addAllowedMethod("*")
                         allowCredentials = true
