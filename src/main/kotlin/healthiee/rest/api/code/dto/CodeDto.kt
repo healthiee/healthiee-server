@@ -3,7 +3,7 @@ package healthiee.rest.api.code.dto
 import healthiee.rest.domain.code.Code
 
 data class CodeDto(
-    val id: Long,
+    val codeId: Long,
     val type: Code.Type,
     val name: String,
 )

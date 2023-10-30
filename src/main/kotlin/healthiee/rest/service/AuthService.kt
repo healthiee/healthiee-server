@@ -20,7 +20,7 @@ import healthiee.rest.lib.error.ApplicationErrorCode.NOT_FOUND_CODE
 import healthiee.rest.lib.error.ApplicationErrorCode.NOT_FOUND_MEMBER
 import healthiee.rest.lib.mail.MailSender
 import healthiee.rest.lib.uploader.MediaDomainType
-import healthiee.rest.lib.uploader.MediaType
+import healthiee.rest.domain.common.MediaType
 import healthiee.rest.lib.uploader.S3Uploader
 import healthiee.rest.repository.auth.EmailAuthRepository
 import healthiee.rest.repository.auth.TokenRepository

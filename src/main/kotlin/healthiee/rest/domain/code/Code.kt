@@ -50,4 +50,8 @@ class Code(
         ) = Code(type, name, active)
     }
 
+    override fun toString(): String {
+        return "Code(id=$id, name='$name', active=$active)"
+    }
+
 }

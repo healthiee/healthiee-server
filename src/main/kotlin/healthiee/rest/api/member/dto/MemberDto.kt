@@ -4,7 +4,7 @@ import healthiee.rest.domain.member.Member
 import java.util.*
 
 data class MemberDto(
-    val id: UUID,
+    val memberId: UUID,
     val email: String,
     val name: String,
     val nickname: String,

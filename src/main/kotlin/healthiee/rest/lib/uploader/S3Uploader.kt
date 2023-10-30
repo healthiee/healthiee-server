@@ -3,6 +3,7 @@ package healthiee.rest.lib.uploader
 import com.amazonaws.services.s3.AmazonS3Client
 import com.amazonaws.services.s3.model.CannedAccessControlList
 import com.amazonaws.services.s3.model.PutObjectRequest
+import healthiee.rest.domain.common.MediaType
 import healthiee.rest.lib.error.ApiException
 import healthiee.rest.lib.error.CommonErrorCode.INTERNAL_SERVER_ERROR
 import org.springframework.beans.factory.annotation.Value

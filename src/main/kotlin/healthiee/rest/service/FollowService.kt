@@ -5,7 +5,7 @@ import healthiee.rest.domain.member.Member
 import healthiee.rest.lib.error.ApiException
 import healthiee.rest.lib.error.ApplicationErrorCode.BAD_REQUEST_ALREADY_EXIST_FOLLOW
 import healthiee.rest.lib.error.ApplicationErrorCode.NOT_FOUND_FOLLOW
-import healthiee.rest.repository.follow.FollowQueryRepository
+import healthiee.rest.repository.follow.query.FollowQueryRepository
 import healthiee.rest.repository.follow.FollowRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional

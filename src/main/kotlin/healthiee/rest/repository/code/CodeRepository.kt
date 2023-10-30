@@ -11,4 +11,6 @@ interface CodeRepository : JpaRepository<Code, Long> {
     @Query("select c from Code c where c.active = :active")
     fun findAllByActive(active: Boolean): List<Code>
 
+    fun findByName(name: String): Code?
+
 }

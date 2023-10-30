@@ -1,4 +1,4 @@
-package healthiee.rest.lib.uploader
+package healthiee.rest.domain.common
 
 enum class MediaType(val dirName: String) {
     IMAGE("images"),

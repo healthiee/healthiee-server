@@ -8,7 +8,7 @@ data class SaveCodeRequest(
     @field:NotNull(message = "The value must be codeType('POST_CATEGORY')")
     @JsonProperty("type")
     private val _type: Code.Type?,
-    @field:NotNull(message = "The name value must be null")
+    @field:NotNull(message = "The name value must not be null")
     @JsonProperty("name")
     private val _name: String?,
 ) {

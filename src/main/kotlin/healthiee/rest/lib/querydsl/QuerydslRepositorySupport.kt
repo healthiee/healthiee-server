@@ -43,21 +43,27 @@ abstract class QuerydslRepositorySupport(private val domainClass: Class<*>) {
         return queryFactory.selectFrom(from)
     }
 
-    protected fun <T> applyPagination(pageable: Pageable, contentQuery: Function<JPAQueryFactory, JPAQuery<*>>): Page<T> {
+    protected fun <T> applyPagination(
+        pageable: Pageable,
+        contentQuery: Function<JPAQueryFactory, JPAQuery<T>>,
+    ): Page<T> {
         val jpaQuery = contentQuery.apply(queryFactory)
 
         val content: List<T> = querydsl.applyPagination(pageable, jpaQuery).fetch() as List<T>
 
-        return PageableExecutionUtils.getPage(content, pageable) { jpaQuery.fetchCount() }
+        return PageableExecutionUtils.getPage(content, pageable) { content.size.toLong() }
     }
 
-    protected fun applyPagination(pageable: Pageable, contentQuery: Function<JPAQueryFactory, JPAQuery<*>>, countQuery: Function<JPAQueryFactory, JPAQuery<*>>): Page<Any> {
-
+    protected fun <T> applyPagination(
+        pageable: Pageable,
+        contentQuery: Function<JPAQueryFactory, JPAQuery<T>>,
+        countQuery: Function<JPAQueryFactory, JPAQuery<Long>>,
+    ): Page<T> {
         val jpaContentQuery = contentQuery.apply(queryFactory)
         val content = querydsl.applyPagination(pageable, jpaContentQuery).fetch()
-        val countQuery = countQuery.apply(queryFactory)
+        val countJPAQuery = countQuery.apply(queryFactory)
 
-        return PageableExecutionUtils.getPage(content, pageable) { countQuery.fetchCount() }
+        return PageableExecutionUtils.getPage(content, pageable) { countJPAQuery.fetchFirst() }
 
 
     }

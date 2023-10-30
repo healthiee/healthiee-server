@@ -92,4 +92,8 @@ class Member(params: MemberParam) : BaseEntity(), UserDetails {
         }
     }
 
+    override fun toString(): String {
+        return "Member(id=$id, email='$email', name='$name', nickname='$nickname', bio='$bio', profileUrl='$profileUrl')"
+    }
+
 }

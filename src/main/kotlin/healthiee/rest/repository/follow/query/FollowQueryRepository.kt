@@ -1,4 +1,4 @@
-package healthiee.rest.repository.follow
+package healthiee.rest.repository.follow.query
 
 import com.querydsl.core.types.dsl.BooleanExpression
 import healthiee.rest.domain.follow.Follow
