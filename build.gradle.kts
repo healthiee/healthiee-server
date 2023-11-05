@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.springframework.core.env.PropertySource.named
 
 plugins {
     id("org.springframework.boot") version "3.1.2"
@@ -10,7 +11,7 @@ plugins {
 }
 
 group = "healthiee"
-version = "0.1.1"
+version = "0.1.3"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17
@@ -53,4 +54,13 @@ tasks.withType<KotlinCompile> {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+}
+
+tasks.jar {
+    enabled = false
+}
+
+tasks.bootJar {
+    enabled = true
+    mainClass = "healthiee.rest.HealthieeApplicationKt"
 }

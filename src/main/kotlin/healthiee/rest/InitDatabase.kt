@@ -37,7 +37,7 @@ class InitDatabase(
         saveAdmin()
         saveMembers()
         saveEmailAuths()
-        savePosts()
+//        savePosts()
     }
 
     private fun saveCodes() {
