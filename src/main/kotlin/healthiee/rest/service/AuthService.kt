@@ -1,13 +1,13 @@
 package healthiee.rest.service
 
-import healthiee.rest.api.auth.dto.AuthenticationDto
-import healthiee.rest.api.auth.dto.TokenDto
-import healthiee.rest.api.auth.dto.request.AuthRequest
-import healthiee.rest.api.auth.dto.request.CodeLoginRequest
-import healthiee.rest.api.auth.dto.request.RefreshTokenRequest
-import healthiee.rest.api.auth.dto.request.RegisterRequest
-import healthiee.rest.api.auth.dto.response.AuthResponse
-import healthiee.rest.api.auth.dto.response.VerifyCodeResponse
+import healthiee.rest.dto.auth.AuthenticationDto
+import healthiee.rest.dto.auth.TokenDto
+import healthiee.rest.dto.auth.request.AuthRequest
+import healthiee.rest.dto.auth.request.CodeLoginRequest
+import healthiee.rest.dto.auth.request.RefreshTokenRequest
+import healthiee.rest.dto.auth.request.RegisterRequest
+import healthiee.rest.dto.auth.response.AuthResponse
+import healthiee.rest.dto.auth.response.VerifyCodeResponse
 import healthiee.rest.domain.auth.EmailAuth
 import healthiee.rest.domain.auth.Token
 import healthiee.rest.domain.hashtag.Hashtag

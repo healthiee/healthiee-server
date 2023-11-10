@@ -1,6 +1,6 @@
 package healthiee.rest.service
 
-import healthiee.rest.api.member.dto.MemberDto
+import healthiee.rest.dto.member.MemberDto
 import healthiee.rest.lib.error.ApiException
 import healthiee.rest.lib.error.ApplicationErrorCode.NOT_FOUND_MEMBER
 import healthiee.rest.repository.member.MemberRepository

@@ -62,6 +62,12 @@ class Post(
         media.post = this
     }
 
+    fun updateMedias(medias: List<PostMedia>) {
+        this.medias.clear()
+        this.medias.addAll(medias)
+        medias.forEach { it.post = this }
+    }
+
     companion object {
         fun createPost(
             category: Code?,

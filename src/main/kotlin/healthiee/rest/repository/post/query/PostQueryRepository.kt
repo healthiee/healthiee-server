@@ -12,7 +12,7 @@ class PostQueryRepository(
     private val postMediaQueryRepository: PostMediaQueryRepository,
 ) : QuerydslRepositorySupport(Post::class.java) {
 
-    fun findById(id: UUID): Post? {
+    fun findAll(): List<Post> {
         val findPost = selectFrom(post)
             .leftJoin(post.category)
             .fetchJoin()
@@ -20,12 +20,9 @@ class PostQueryRepository(
             .fetchJoin()
             .join(post.member)
             .fetchJoin()
-            .where(idEq(id))
-            .fetchOne()
+            .fetch()
 
-        findPost?.let { post ->
-            postMediaQueryRepository.findByPostId(id).forEach { post.addMedia(it) }
-        }
+        findPost.forEach { it.updateMedias(postMediaQueryRepository.findByPostId(it.id)) }
 
         return findPost
     }

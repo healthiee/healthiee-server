@@ -1,9 +1,9 @@
 package healthiee.rest.service
 
-import healthiee.rest.api.code.dto.CodeDto
-import healthiee.rest.api.code.dto.request.SaveCodeRequest
-import healthiee.rest.api.code.dto.request.UpdateCodeRequest
-import healthiee.rest.api.code.dto.toDto
+import healthiee.rest.dto.code.CodeDto
+import healthiee.rest.dto.code.request.SaveCodeRequest
+import healthiee.rest.dto.code.request.UpdateCodeRequest
+import healthiee.rest.dto.code.toDto
 import healthiee.rest.domain.code.Code
 import healthiee.rest.lib.error.ApiException
 import healthiee.rest.lib.error.ApplicationErrorCode.NOT_FOUND_CODE
