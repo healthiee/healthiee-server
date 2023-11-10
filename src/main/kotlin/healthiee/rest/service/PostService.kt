@@ -10,8 +10,10 @@ import healthiee.rest.dto.post.PostSummaryDto
 import healthiee.rest.dto.post.request.SavePostRequest
 import healthiee.rest.dto.post.toSummaryDto
 import healthiee.rest.lib.error.ApiException
+import healthiee.rest.lib.error.ApplicationErrorCode
 import healthiee.rest.lib.error.ApplicationErrorCode.BAD_REQUEST_EMPTY_POST_IMAGES
 import healthiee.rest.lib.error.ApplicationErrorCode.NOT_FOUND_CODE
+import healthiee.rest.lib.error.ApplicationErrorCode.NOT_FOUND_POST
 import healthiee.rest.lib.uploader.MediaDomainType
 import healthiee.rest.lib.uploader.S3Uploader
 import healthiee.rest.repository.code.CodeRepository
@@ -23,6 +25,7 @@ import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
+import java.util.UUID
 
 @Service
 @Transactional(readOnly = true)
@@ -69,6 +72,10 @@ class PostService(
 
     fun findAll(): List<PostSummaryDto> {
         return postQueryRepository.findAll().map { it.toSummaryDto() }
+    }
+
+    fun findById(postId: UUID): Post {
+        return postQueryRepository.findById(postId) ?: throw ApiException(NOT_FOUND_POST)
     }
 
 }

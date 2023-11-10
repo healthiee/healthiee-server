@@ -13,7 +13,7 @@ class PostQueryRepository(
 ) : QuerydslRepositorySupport(Post::class.java) {
 
     fun findAll(): List<Post> {
-        val findPost = selectFrom(post)
+        val findAll = selectFrom(post)
             .leftJoin(post.category)
             .fetchJoin()
             .leftJoin(post.location)
@@ -22,7 +22,23 @@ class PostQueryRepository(
             .fetchJoin()
             .fetch()
 
-        findPost.forEach { it.updateMedias(postMediaQueryRepository.findByPostId(it.id)) }
+        findAll.forEach { it.updateMedias(postMediaQueryRepository.findByPostId(it.id)) }
+
+        return findAll
+    }
+
+    fun findById(postId: UUID): Post? {
+        val findPost = selectFrom(post)
+            .leftJoin(post.category)
+            .fetchJoin()
+            .leftJoin(post.location)
+            .fetchJoin()
+            .join(post.member)
+            .fetchJoin()
+            .where(idEq(postId))
+            .fetchOne()
+
+        findPost?.let { it.updateMedias(postMediaQueryRepository.findByPostId(it.id)) }
 
         return findPost
     }
