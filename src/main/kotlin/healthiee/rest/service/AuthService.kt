@@ -1,17 +1,16 @@
 package healthiee.rest.service
 
-import healthiee.rest.dto.auth.AuthenticationDto
-import healthiee.rest.dto.auth.TokenDto
+import healthiee.rest.domain.auth.EmailAuth
+import healthiee.rest.domain.auth.Token
+import healthiee.rest.domain.common.MediaType
+import healthiee.rest.domain.hashtag.Hashtag
+import healthiee.rest.domain.member.Member
+import healthiee.rest.dto.auth.AuthenticationTempDto
 import healthiee.rest.dto.auth.request.AuthRequest
 import healthiee.rest.dto.auth.request.CodeLoginRequest
-import healthiee.rest.dto.auth.request.RefreshTokenRequest
 import healthiee.rest.dto.auth.request.RegisterRequest
 import healthiee.rest.dto.auth.response.AuthResponse
 import healthiee.rest.dto.auth.response.VerifyCodeResponse
-import healthiee.rest.domain.auth.EmailAuth
-import healthiee.rest.domain.auth.Token
-import healthiee.rest.domain.hashtag.Hashtag
-import healthiee.rest.domain.member.Member
 import healthiee.rest.lib.authority.JwtTokenProvider
 import healthiee.rest.lib.authority.TokenType
 import healthiee.rest.lib.error.ApiException
@@ -20,7 +19,6 @@ import healthiee.rest.lib.error.ApplicationErrorCode.NOT_FOUND_CODE
 import healthiee.rest.lib.error.ApplicationErrorCode.NOT_FOUND_MEMBER
 import healthiee.rest.lib.mail.MailSender
 import healthiee.rest.lib.uploader.MediaDomainType
-import healthiee.rest.domain.common.MediaType
 import healthiee.rest.lib.uploader.S3Uploader
 import healthiee.rest.repository.auth.EmailAuthRepository
 import healthiee.rest.repository.auth.TokenRepository
@@ -64,7 +62,7 @@ class AuthService(
     }
 
     @Transactional
-    fun codeLogin(request: CodeLoginRequest): AuthenticationDto {
+    fun codeLogin(request: CodeLoginRequest): AuthenticationTempDto {
         val findEmailAuth = emailAuthRepository.findByCode(request.code)
         findEmailAuth ?: throw ApiException(NOT_FOUND_CODE)
         if (findEmailAuth.disabled) throw ApiException(NOT_FOUND_CODE)
@@ -88,9 +86,10 @@ class AuthService(
 
         findEmailAuth.used()
 
-        return AuthenticationDto(
+        return AuthenticationTempDto(
             memberId = findMember.id,
-            tokens = TokenDto(accessToken, refreshToken)
+            token = accessToken,
+            refreshToken = refreshToken,
         )
     }
 
@@ -106,9 +105,9 @@ class AuthService(
     }
 
     @Transactional
-    fun register(request: RegisterRequest, image: MultipartFile?): AuthenticationDto {
-        val findEmailAuth = emailAuthRepository.findByCode(UUID.fromString(request.code))
-        findEmailAuth ?: throw ApiException(NOT_FOUND_CODE)
+    fun register(request: RegisterRequest, image: MultipartFile?): AuthenticationTempDto {
+        val findEmailAuth =
+            emailAuthRepository.findByCode(UUID.fromString(request.code)) ?: throw ApiException(NOT_FOUND_CODE)
         if (findEmailAuth.disabled) throw ApiException(NOT_FOUND_CODE)
 
         val diff = Duration.between(findEmailAuth.createdDate, LocalDateTime.now())
@@ -159,23 +158,24 @@ class AuthService(
 
         findEmailAuth.used()
 
-        return AuthenticationDto(
+        return AuthenticationTempDto(
             memberId = member.id,
-            tokens = TokenDto(accessToken, refreshToken)
+            token = accessToken,
+            refreshToken = refreshToken,
         )
     }
 
     @Transactional
-    fun refreshToken(request: RefreshTokenRequest): AuthenticationDto {
-        val type: String = jwtTokenProvider.extractClaim(request.refreshToken) {
+    fun refreshToken(refreshToken: String): AuthenticationTempDto {
+        val type: String = jwtTokenProvider.extractClaim(refreshToken) {
             it.get("type", String::class.java)
         } ?: throw ApiException(FORBIDDEN_INVALID_REFRESH_TOKEN)
-        val tokenId: String = jwtTokenProvider.extractClaim(request.refreshToken) {
+        val tokenId: String = jwtTokenProvider.extractClaim(refreshToken) {
             it.get("tokenId", String::class.java)
         } ?: throw ApiException(FORBIDDEN_INVALID_REFRESH_TOKEN)
-        val memberId: String = jwtTokenProvider.extractUsername(request.refreshToken)
+        val memberId: String = jwtTokenProvider.extractUsername(refreshToken)
             ?: throw ApiException(FORBIDDEN_INVALID_REFRESH_TOKEN)
-        val rotationCounter: Int = jwtTokenProvider.extractClaim(request.refreshToken) {
+        val rotationCounter: Int = jwtTokenProvider.extractClaim(refreshToken) {
             it.get("rotationCounter", Integer::class.java)
         }?.toInt() ?: throw ApiException(FORBIDDEN_INVALID_REFRESH_TOKEN)
 
@@ -197,11 +197,12 @@ class AuthService(
 
         val refreshClaims = mapOf("rotationCounter" to findToken.rotationCounter, "tokenId" to tokenId)
         val accessToken = jwtTokenProvider.generateToken(findMember)
-        val refreshToken = jwtTokenProvider.generateRefreshToken(refreshClaims, findMember)
+        val newRefreshToken = jwtTokenProvider.generateRefreshToken(refreshClaims, findMember)
 
-        return AuthenticationDto(
+        return AuthenticationTempDto(
             findMember.id,
-            TokenDto(accessToken, refreshToken)
+            accessToken,
+            newRefreshToken,
         )
     }
 
