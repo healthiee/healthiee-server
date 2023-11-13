@@ -5,8 +5,8 @@ import healthiee.rest.domain.post.Post
 import healthiee.rest.domain.post.PostMedia
 import healthiee.rest.repository.code.CodeRepository
 import healthiee.rest.repository.member.MemberRepository
-import healthiee.rest.repository.post.query.PostQueryRepository
 import healthiee.rest.repository.post.PostRepository
+import healthiee.rest.repository.post.query.PostQueryRepository
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -46,10 +46,18 @@ class PostServiceTest {
 
         val findMember = memberRepository.findByEmail(member1Email) ?: return
 
-        val media1 = PostMedia.createPostMedia(MediaType.IMAGE, "url1")
-        val media2 = PostMedia.createPostMedia(MediaType.IMAGE, "url2")
+        val medias = listOf(
+            PostMedia.createPostMedia(MediaType.IMAGE, "url1"),
+            PostMedia.createPostMedia(MediaType.IMAGE, "url2")
+        )
 
-        val post = Post.createPost(null, findMember, content, null, media1, media2)
+        val post = Post.createPost(
+            category = null,
+            member = findMember,
+            content = content,
+            location = null,
+            postMedias = medias.toTypedArray()
+        )
         postRepository.save(post)
 
         // when

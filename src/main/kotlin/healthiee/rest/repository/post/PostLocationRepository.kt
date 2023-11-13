@@ -5,4 +5,8 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface PostLocationRepository : JpaRepository<PostLocation, Long>
+interface PostLocationRepository : JpaRepository<PostLocation, Long> {
+
+    fun findByKakaoId(kakaoId: String): PostLocation?
+
+}

@@ -1,5 +1,6 @@
 package healthiee.rest.domain.post
 
+import healthiee.rest.domain.base.BaseEntity
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.GeneratedValue
@@ -15,7 +16,7 @@ class PostLocation(
     _longitude: Double,
     _placeName: String,
     _addressName: String,
-) {
+) : BaseEntity() {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

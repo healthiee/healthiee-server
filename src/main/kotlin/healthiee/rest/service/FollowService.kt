@@ -5,8 +5,8 @@ import healthiee.rest.domain.member.Member
 import healthiee.rest.lib.error.ApiException
 import healthiee.rest.lib.error.ApplicationErrorCode.BAD_REQUEST_ALREADY_EXIST_FOLLOW
 import healthiee.rest.lib.error.ApplicationErrorCode.NOT_FOUND_FOLLOW
-import healthiee.rest.repository.follow.query.FollowQueryRepository
 import healthiee.rest.repository.follow.FollowRepository
+import healthiee.rest.repository.follow.query.FollowQueryRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -19,7 +19,7 @@ class FollowService(
 
     @Transactional
     fun follow(member: Member, targetMember: Member) {
-        val findFollow = queryRepository.findByMember(member.nickname, targetMember.nickname)
+        val findFollow = queryRepository.findByMember(member.id, targetMember.id)
         findFollow?.let { throw ApiException(BAD_REQUEST_ALREADY_EXIST_FOLLOW) }
 
         followRepository.save(Follow.createFollow(member, targetMember))
@@ -27,7 +27,7 @@ class FollowService(
 
     @Transactional
     fun unfollow(member: Member, targetMember: Member) {
-        val findFollow = queryRepository.findByMember(member.nickname, targetMember.nickname)
+        val findFollow = queryRepository.findByMember(member.id, targetMember.id)
             ?: throw ApiException(NOT_FOUND_FOLLOW)
 
         findFollow.delete()

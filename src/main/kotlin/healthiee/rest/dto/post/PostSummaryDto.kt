@@ -14,18 +14,29 @@ data class PostSummaryDto(
     val content: String,
     val medias: List<MediaDto>,
     val member: MemberSummaryDto,
+    val location: PostLocationDto?,
     val likeCount: Int,
     val commentCount: Int,
+    val liked: Boolean,
     val createdDate: LocalDateTime,
-)
+) {
 
-fun Post.toSummaryDto() = PostSummaryDto(
-    this.id,
-    this.category?.toCategoryDto(),
-    this.content,
-    this.medias.map { it.toDto() },
-    this.member.toSummaryDto(),
-    1,
-    3,
-    this.createdDate,
-)
+    companion object {
+        fun create(
+            post: Post,
+            liked: Boolean,
+        ) = PostSummaryDto(
+            post.id,
+            post.category?.toCategoryDto(),
+            post.content,
+            post.medias.map { it.toDto() },
+            post.member.toSummaryDto(),
+            post.location?.toDto(),
+            post.likeCount,
+            post.commentCount,
+            liked,
+            post.createdDate,
+        )
+    }
+
+}

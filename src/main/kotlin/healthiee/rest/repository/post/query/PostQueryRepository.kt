@@ -1,9 +1,14 @@
 package healthiee.rest.repository.post.query
 
 import com.querydsl.core.types.dsl.BooleanExpression
+import healthiee.rest.domain.code.Code
+import healthiee.rest.domain.member.Member
 import healthiee.rest.domain.post.Post
 import healthiee.rest.domain.post.QPost.post
+import healthiee.rest.dto.post.PostSearchCondition
 import healthiee.rest.lib.querydsl.QuerydslRepositorySupport
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Repository
 import java.util.*
 
@@ -12,19 +17,36 @@ class PostQueryRepository(
     private val postMediaQueryRepository: PostMediaQueryRepository,
 ) : QuerydslRepositorySupport(Post::class.java) {
 
-    fun findAll(): List<Post> {
-        val findAll = selectFrom(post)
-            .leftJoin(post.category)
-            .fetchJoin()
-            .leftJoin(post.location)
-            .fetchJoin()
-            .join(post.member)
-            .fetchJoin()
-            .fetch()
-
-        findAll.forEach { it.updateMedias(postMediaQueryRepository.findByPostId(it.id)) }
-
-        return findAll
+    fun findAll(
+        pageable: Pageable,
+        searchCondition: PostSearchCondition,
+    ): Page<Post> {
+        return applyPagination(
+            pageable,
+            {
+                it.selectFrom(post)
+                    .leftJoin(post.category)
+                    .fetchJoin()
+                    .leftJoin(post.location)
+                    .fetchJoin()
+                    .join(post.member)
+                    .fetchJoin()
+                    .where(
+                        membersIn(searchCondition.members),
+                        categoriesIn(searchCondition.categories),
+                    )
+                    .offset(pageable.offset)
+                    .limit(pageable.pageSize.toLong())
+                    .orderBy(post.createdDate.desc())
+            }, {
+                it.select(post.count())
+                    .from(post)
+                    .where(
+                        membersIn(searchCondition.members),
+                        categoriesIn(searchCondition.categories),
+                    )
+            }
+        )
     }
 
     fun findById(postId: UUID): Post? {
@@ -35,7 +57,10 @@ class PostQueryRepository(
             .fetchJoin()
             .join(post.member)
             .fetchJoin()
-            .where(idEq(postId))
+            .where(
+                idEq(postId),
+                deletedEq(false)
+            )
             .fetchOne()
 
         findPost?.let { it.updateMedias(postMediaQueryRepository.findByPostId(it.id)) }
@@ -44,5 +69,15 @@ class PostQueryRepository(
     }
 
     private fun idEq(id: UUID): BooleanExpression = post.id.eq(id)
+
+    private fun membersIn(members: List<Member>): BooleanExpression? =
+        if (members.isEmpty()) null
+        else post.member.`in`(members)
+
+    private fun categoriesIn(categories: List<Code>): BooleanExpression? =
+        if (categories.isEmpty()) null
+        else post.category.`in`(categories)
+
+    private fun deletedEq(condition: Boolean): BooleanExpression = post.deleted.eq(condition)
 
 }

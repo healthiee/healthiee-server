@@ -25,7 +25,7 @@ abstract class BaseEntity {
     var deleted: Boolean = false
         private set
 
-    fun delete() {
+    open fun delete() {
         deleted = true
     }
 
