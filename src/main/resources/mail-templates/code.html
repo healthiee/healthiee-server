@@ -11,7 +11,7 @@
              style="width: 200px; height: 40px; margin-bottom: 12px; max-width: 100%; margin: 0 auto;">
     </div>
     <div style="font-size: 12px; max-width: 100%; width: 400px; margin: 0 auto; padding: 1rem; text-align: justify; background: #f8f9fa; border: 1px solid #dee2e6; box-sizing: border-box; border-radius: 20px; color: #000000; margin-top: 0.5rem; box-sizing: border-box;">
-        로그인을 계속하시려면 하단의 링크를 클릭하세요. 만약에 실수로 요청하셨거나, 본인이 요청하지 않았다면 이 메일을 무시하세요.
+        <span th:text="${text}"></span>을 계속하시려면 하단의 링크를 클릭하세요. 만약에 실수로 요청하셨거나, 본인이 요청하지 않았다면 이 메일을 무시하세요.
     </div>
     <div style="text-decoration: none; text-align: center;">
         <a th:href="@{${url}}">

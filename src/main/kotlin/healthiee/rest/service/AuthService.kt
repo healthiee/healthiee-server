@@ -17,7 +17,10 @@ import healthiee.rest.lib.error.ApiException
 import healthiee.rest.lib.error.ApplicationErrorCode.FORBIDDEN_INVALID_REFRESH_TOKEN
 import healthiee.rest.lib.error.ApplicationErrorCode.NOT_FOUND_CODE
 import healthiee.rest.lib.error.ApplicationErrorCode.NOT_FOUND_MEMBER
-import healthiee.rest.lib.mail.MailSender
+import healthiee.rest.lib.mail.model.MailBuilderParams
+import healthiee.rest.lib.mail.model.MailSenderParams
+import healthiee.rest.lib.mail.sender.MailSender
+import healthiee.rest.lib.mail.template.MailBuilder
 import healthiee.rest.lib.uploader.MediaDomainType
 import healthiee.rest.lib.uploader.S3Uploader
 import healthiee.rest.repository.auth.EmailAuthRepository
@@ -42,6 +45,7 @@ class AuthService(
     private val memberRepository: MemberRepository,
     private val tokenRepository: TokenRepository,
     private val hashtagRepository: HashtagRepository,
+    private val mailBuilder: MailBuilder,
     private val mailSender: MailSender,
     private val jwtTokenProvider: JwtTokenProvider,
     private val passwordEncoder: PasswordEncoder,
@@ -56,7 +60,16 @@ class AuthService(
 
         val emailAuth = EmailAuth.createEmailAuth(request.email)
         emailAuthRepository.save(emailAuth)
-        mailSender.send(request.email, registered, emailAuth.code)
+
+        val mailBuilderParams = MailBuilderParams(registered, emailAuth.code)
+
+        mailSender.send(
+            MailSenderParams(
+                request.email,
+                mailBuilder.makeSubject(mailBuilderParams),
+                mailBuilder.makeBody(mailBuilderParams),
+            )
+        )
 
         return AuthResponse(registered)
     }
