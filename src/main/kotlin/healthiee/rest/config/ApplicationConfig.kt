@@ -1,6 +1,6 @@
 package healthiee.rest.config
 
-import healthiee.rest.repository.member.MemberRepository
+import healthiee.rest.domain.member.repository.MemberRepository
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.data.repository.findByIdOrNull
