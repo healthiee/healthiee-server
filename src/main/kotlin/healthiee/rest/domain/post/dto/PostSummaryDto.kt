@@ -1,8 +1,8 @@
 package healthiee.rest.domain.post.dto
 
 import healthiee.rest.domain.post.entity.Post
-import healthiee.rest.domain.common.dto.MediaDto
-import healthiee.rest.domain.common.dto.toDto
+import healthiee.rest.domain.common.dto.media.MediaDto
+import healthiee.rest.domain.common.dto.media.toDto
 import healthiee.rest.domain.member.dto.MemberSummaryDto
 import healthiee.rest.domain.member.dto.toSummaryDto
 import java.time.LocalDateTime

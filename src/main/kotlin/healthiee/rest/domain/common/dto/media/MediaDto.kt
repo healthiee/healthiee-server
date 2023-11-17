@@ -1,4 +1,4 @@
-package healthiee.rest.domain.common.dto
+package healthiee.rest.domain.common.dto.media
 
 import healthiee.rest.domain.common.entity.media.MediaType
 import healthiee.rest.domain.post.entity.PostMedia

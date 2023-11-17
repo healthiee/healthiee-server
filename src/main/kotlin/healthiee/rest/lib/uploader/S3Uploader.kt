@@ -5,7 +5,7 @@ import com.amazonaws.services.s3.model.CannedAccessControlList
 import com.amazonaws.services.s3.model.PutObjectRequest
 import healthiee.rest.domain.common.entity.media.MediaType
 import healthiee.rest.lib.error.ApiException
-import healthiee.rest.lib.error.CommonErrorCode.INTERNAL_SERVER_ERROR
+import healthiee.rest.lib.error.ErrorCode.INTERNAL_SERVER_ERROR
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import org.springframework.web.multipart.MultipartFile
@@ -22,7 +22,7 @@ class S3Uploader(
 
     fun upload(multipartFile: MultipartFile, mediaType: MediaType, domainType: MediaDomainType): String {
         val uploadFile: File = convert(multipartFile)
-            ?: throw ApiException(INTERNAL_SERVER_ERROR)
+            ?: throw ApiException(INTERNAL_SERVER_ERROR, "이미지 업로드 중에 오류가 발생하였습니다")
         return upload(uploadFile, mediaType, domainType)
     }
 

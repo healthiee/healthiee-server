@@ -3,7 +3,7 @@ package healthiee.rest.domain.code.api
 import healthiee.rest.domain.code.dto.CodeDto
 import healthiee.rest.domain.code.dto.request.SaveCodeRequest
 import healthiee.rest.domain.code.dto.request.UpdateCodeRequest
-import healthiee.rest.lib.response.BaseResponse
+import healthiee.rest.domain.common.dto.base.Response
 import healthiee.rest.domain.code.service.CodeService
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
@@ -26,10 +26,10 @@ class CodeApiController(
 
     @PostMapping("")
     @PreAuthorize("hasRole('ADMIN')")
-    fun save(@RequestBody @Valid request: SaveCodeRequest): ResponseEntity<BaseResponse<Any>> {
+    fun save(@RequestBody @Valid request: SaveCodeRequest): ResponseEntity<Response<Any>> {
         codeService.save(request)
         return ResponseEntity.ok(
-            BaseResponse(
+            Response(
                 code = HttpStatus.OK.value(),
                 message = "코드 생성이 완료되었습니다"
             )
@@ -38,9 +38,9 @@ class CodeApiController(
 
     @GetMapping("")
     @PreAuthorize("hasRole('ADMIN') or hasRole('MEMBER')")
-    fun findAll(): ResponseEntity<BaseResponse<List<CodeDto>>> {
+    fun findAll(): ResponseEntity<Response<List<CodeDto>>> {
         return ResponseEntity.ok(
-            BaseResponse(
+            Response(
                 code = HttpStatus.OK.value(),
                 data = codeService.findAll(),
             )
@@ -52,10 +52,10 @@ class CodeApiController(
     fun update(
         @PathVariable("codeId") codeId: Long,
         @RequestBody @Valid request: UpdateCodeRequest,
-    ): ResponseEntity<BaseResponse<Any>> {
+    ): ResponseEntity<Response<Any>> {
         codeService.update(codeId, request)
         return ResponseEntity.ok(
-            BaseResponse(
+            Response(
                 code = HttpStatus.OK.value(),
                 message = "코드 수정이 완료되었습니다"
             )
@@ -64,10 +64,10 @@ class CodeApiController(
 
     @DeleteMapping("{codeId}")
     @PreAuthorize("hasRole('ADMIN')")
-    fun delete(@PathVariable("codeId") codeId: Long): ResponseEntity<BaseResponse<Any>> {
+    fun delete(@PathVariable("codeId") codeId: Long): ResponseEntity<Response<Any>> {
         codeService.delete(codeId)
         return ResponseEntity.ok(
-            BaseResponse(
+            Response(
                 code = HttpStatus.OK.value(),
                 message = "코드 삭제가 완료되었습니다"
             )

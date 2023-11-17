@@ -2,7 +2,7 @@ package healthiee.rest.domain.code.repository
 
 import com.querydsl.core.types.dsl.BooleanExpression
 import healthiee.rest.domain.code.entity.Code
-import healthiee.rest.domain.code.QCode.code
+import healthiee.rest.domain.code.entity.QCode.code
 import healthiee.rest.lib.querydsl.QuerydslRepositorySupport
 import org.springframework.stereotype.Repository
 

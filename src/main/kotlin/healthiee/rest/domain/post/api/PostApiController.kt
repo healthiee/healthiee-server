@@ -5,7 +5,7 @@ import healthiee.rest.domain.post.dto.PostSummaryDto
 import healthiee.rest.domain.post.dto.request.SavePostRequest
 import healthiee.rest.domain.post.dto.request.SearchConditionRequest
 import healthiee.rest.domain.post.dto.request.UpdatePostRequest
-import healthiee.rest.lib.response.BaseResponse
+import healthiee.rest.domain.common.dto.base.Response
 import healthiee.rest.domain.post.service.PostService
 import jakarta.validation.Valid
 import org.springframework.data.domain.Page
@@ -42,9 +42,9 @@ class PostApiController(
         @Valid @RequestPart("data") request: SavePostRequest,
         @RequestPart("images") images: List<MultipartFile>,
         @AuthenticationPrincipal member: Member,
-    ): ResponseEntity<BaseResponse<Any>> {
+    ): ResponseEntity<Response<Any>> {
         postService.save(request, images, member)
-        return ResponseEntity.ok(BaseResponse(code = HttpStatus.OK.value(), message = "포스트 등록이 완료되었습니다"))
+        return ResponseEntity.ok(Response(code = HttpStatus.OK.value(), message = "포스트 등록이 완료되었습니다"))
     }
 
     @PatchMapping("{postId}")
@@ -53,18 +53,18 @@ class PostApiController(
         @PathVariable("postId") postId: UUID,
         @Valid @RequestBody request: UpdatePostRequest,
         @AuthenticationPrincipal member: Member,
-    ): ResponseEntity<BaseResponse<Any>> {
+    ): ResponseEntity<Response<Any>> {
         postService.update(postId, request, member)
-        return ResponseEntity.ok(BaseResponse(code = HttpStatus.OK.value(), message = "포스트 수정이 완료되었습니다"))
+        return ResponseEntity.ok(Response(code = HttpStatus.OK.value(), message = "포스트 수정이 완료되었습니다"))
     }
 
     @DeleteMapping("{postId}")
     fun delete(
         @PathVariable("postId") postId: UUID,
         @AuthenticationPrincipal member: Member,
-    ): ResponseEntity<BaseResponse<Any>> {
+    ): ResponseEntity<Response<Any>> {
         postService.delete(postId, member)
-        return ResponseEntity.ok(BaseResponse(code = HttpStatus.OK.value(), message = "포스트 삭제가 완료되었습니다"))
+        return ResponseEntity.ok(Response(code = HttpStatus.OK.value(), message = "포스트 삭제가 완료되었습니다"))
     }
 
     @GetMapping("")
@@ -73,9 +73,9 @@ class PostApiController(
         pageable: Pageable,
         searchCondition: SearchConditionRequest,
         @AuthenticationPrincipal member: Member,
-    ): ResponseEntity<BaseResponse<Page<PostSummaryDto>>> {
+    ): ResponseEntity<Response<Page<PostSummaryDto>>> {
         return ResponseEntity.ok(
-            BaseResponse(
+            Response(
                 code = HttpStatus.OK.value(),
                 data = postService.findAll(pageable, searchCondition, member),
             )
@@ -86,8 +86,8 @@ class PostApiController(
     @PreAuthorize("hasRole('MEMBER') or hasRole('ADMIN')")
     fun getPost(
         @PathVariable("postId") postId: UUID,
-    ): ResponseEntity<BaseResponse<Any>> {
-        return ResponseEntity.ok(BaseResponse(code = HttpStatus.OK.value(), message = "포스트 조회"))
+    ): ResponseEntity<Response<Any>> {
+        return ResponseEntity.ok(Response(code = HttpStatus.OK.value(), message = "포스트 조회"))
     }
 
     @PostMapping("{postId}/like")
@@ -95,9 +95,9 @@ class PostApiController(
     fun likePost(
         @PathVariable("postId") postId: UUID,
         @AuthenticationPrincipal member: Member,
-    ): ResponseEntity<BaseResponse<Any>> {
+    ): ResponseEntity<Response<Any>> {
         postService.like(postId, member)
-        return ResponseEntity.ok(BaseResponse(code = HttpStatus.OK.value(), message = "포스트 좋아요가 완료되었습니다"))
+        return ResponseEntity.ok(Response(code = HttpStatus.OK.value(), message = "포스트 좋아요가 완료되었습니다"))
     }
 
     @DeleteMapping("{postId}/like")
@@ -105,9 +105,9 @@ class PostApiController(
     fun cancelLikePost(
         @PathVariable("postId") postId: UUID,
         @AuthenticationPrincipal member: Member,
-    ): ResponseEntity<BaseResponse<Any>> {
+    ): ResponseEntity<Response<Any>> {
         postService.cancelLike(postId, member)
-        return ResponseEntity.ok(BaseResponse(code = HttpStatus.OK.value(), message = "포스트 좋아요 취소가 완료되었습니다"))
+        return ResponseEntity.ok(Response(code = HttpStatus.OK.value(), message = "포스트 좋아요 취소가 완료되었습니다"))
     }
 
 }

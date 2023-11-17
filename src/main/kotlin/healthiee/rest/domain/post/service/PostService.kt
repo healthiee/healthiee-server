@@ -1,35 +1,32 @@
 package healthiee.rest.domain.post.service
 
 import healthiee.rest.domain.code.entity.Code
+import healthiee.rest.domain.code.repository.CodeQueryRepository
+import healthiee.rest.domain.code.repository.CodeRepository
 import healthiee.rest.domain.common.entity.media.MediaType
+import healthiee.rest.domain.follow.repository.FollowQueryRepository
 import healthiee.rest.domain.member.entity.Member
-import healthiee.rest.domain.post.entity.Post
-import healthiee.rest.domain.post.entity.PostLike
-import healthiee.rest.domain.post.entity.PostLocation
-import healthiee.rest.domain.post.entity.PostMedia
 import healthiee.rest.domain.post.dto.PostSearchCondition
 import healthiee.rest.domain.post.dto.PostSummaryDto
 import healthiee.rest.domain.post.dto.request.SavePostRequest
 import healthiee.rest.domain.post.dto.request.SearchConditionRequest
 import healthiee.rest.domain.post.dto.request.UpdatePostRequest
-import healthiee.rest.lib.error.ApiException
-import healthiee.rest.lib.error.ApplicationErrorCode.BAD_REQUEST_ALREADY_EXIST_LIKE_POST
-import healthiee.rest.lib.error.ApplicationErrorCode.BAD_REQUEST_EMPTY_POST_IMAGES
-import healthiee.rest.lib.error.ApplicationErrorCode.FORBIDDEN_NO_PERMISSION
-import healthiee.rest.lib.error.ApplicationErrorCode.NOT_FOUND_CODE
-import healthiee.rest.lib.error.ApplicationErrorCode.NOT_FOUND_POST
-import healthiee.rest.lib.error.ApplicationErrorCode.NOT_FOUND_POST_LIKE
-import healthiee.rest.lib.uploader.MediaDomainType
-import healthiee.rest.lib.uploader.S3Uploader
-import healthiee.rest.domain.code.repository.CodeRepository
-import healthiee.rest.domain.code.repository.CodeQueryRepository
-import healthiee.rest.domain.follow.repository.FollowQueryRepository
+import healthiee.rest.domain.post.entity.Post
+import healthiee.rest.domain.post.entity.PostLike
+import healthiee.rest.domain.post.entity.PostLocation
+import healthiee.rest.domain.post.entity.PostMedia
+import healthiee.rest.domain.post.repository.PostLikeQueryRepository
 import healthiee.rest.domain.post.repository.PostLikeRepository
 import healthiee.rest.domain.post.repository.PostLocationRepository
 import healthiee.rest.domain.post.repository.PostMediaRepository
-import healthiee.rest.domain.post.repository.PostRepository
-import healthiee.rest.domain.post.repository.PostLikeQueryRepository
 import healthiee.rest.domain.post.repository.PostQueryRepository
+import healthiee.rest.domain.post.repository.PostRepository
+import healthiee.rest.lib.error.ApiException
+import healthiee.rest.lib.error.ErrorCode.BAD_REQUEST
+import healthiee.rest.lib.error.ErrorCode.FORBIDDEN
+import healthiee.rest.lib.error.ErrorCode.NOT_FOUND
+import healthiee.rest.lib.uploader.MediaDomainType
+import healthiee.rest.lib.uploader.S3Uploader
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
@@ -55,9 +52,14 @@ class PostService(
 
     @Transactional
     fun save(request: SavePostRequest, images: List<MultipartFile>, member: Member) {
-        if (images.isEmpty()) throw ApiException(BAD_REQUEST_EMPTY_POST_IMAGES)
+        if (images.isEmpty()) throw ApiException(BAD_REQUEST, "포스트 이미지를 넣어주세요")
         val categoryCode: Code? =
-            request.categoryId?.let { codeRepository.findByIdOrNull(it) ?: throw ApiException(NOT_FOUND_CODE) }
+            request.categoryId?.let {
+                codeRepository.findByIdOrNull(it) ?: throw ApiException(
+                    NOT_FOUND,
+                    "카테고리를 찾을 수 없습니다"
+                )
+            }
 
         val location: PostLocation? = request.location?.let {
             postLocationRepository.findByKakaoId(it.id)
@@ -96,7 +98,12 @@ class PostService(
         validateUpdatePermission(post, member)
 
         val category: Code? =
-            request.categoryId?.let { codeRepository.findByIdOrNull(it) ?: throw ApiException(NOT_FOUND_CODE) }
+            request.categoryId?.let {
+                codeRepository.findByIdOrNull(it) ?: throw ApiException(
+                    NOT_FOUND,
+                    "카테고리를 찾을 수 없습니다"
+                )
+            }
         val location: PostLocation? = request.location?.let {
             postLocationRepository.findByKakaoId(it.id)
                 ?: PostLocation.createLocation(
@@ -142,7 +149,7 @@ class PostService(
     fun like(postId: UUID, member: Member) {
         val findPost = getValidPost(postId)
         val findPostLike = postLikeQueryRepository.findByMemberAndPost(member.id, postId)
-        findPostLike?.let { throw ApiException(BAD_REQUEST_ALREADY_EXIST_LIKE_POST) }
+        findPostLike?.let { throw ApiException(BAD_REQUEST, "이미 좋아요를 누른 이력이 있습니다") }
         postLikeRepository.save(PostLike.createPostLike(member, findPost))
         findPost.increaseLikeCount()
     }
@@ -151,7 +158,7 @@ class PostService(
     fun cancelLike(postId: UUID, member: Member) {
         val findPost = getValidPost(postId)
         val findPostLike = postLikeQueryRepository.findByMemberAndPost(member.id, postId)
-            ?: throw ApiException(NOT_FOUND_POST_LIKE)
+            ?: throw ApiException(NOT_FOUND, "좋아요를 누른 이력이 없습니다")
         findPostLike.delete()
         findPost.decreaseLikeCount()
     }
@@ -161,11 +168,11 @@ class PostService(
     }
 
     fun getValidPost(postId: UUID): Post {
-        return postQueryRepository.findById(postId) ?: throw ApiException(NOT_FOUND_POST)
+        return postQueryRepository.findById(postId) ?: throw ApiException(NOT_FOUND, "게시물을 찾을 수 없습니다")
     }
 
     private fun validateUpdatePermission(post: Post, member: Member) {
-        if (post.member.id != member.id) throw ApiException(FORBIDDEN_NO_PERMISSION)
+        if (post.member.id != member.id) throw ApiException(FORBIDDEN, "수정할 권한이 없습니다")
     }
 
 }

@@ -6,7 +6,7 @@ import healthiee.rest.domain.auth.dto.request.CodeLoginRequest
 import healthiee.rest.domain.auth.dto.request.RegisterRequest
 import healthiee.rest.domain.auth.dto.response.AuthResponse
 import healthiee.rest.domain.auth.dto.response.VerifyCodeResponse
-import healthiee.rest.lib.response.BaseResponse
+import healthiee.rest.domain.common.dto.base.Response
 import healthiee.rest.domain.auth.service.AuthService
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
@@ -31,9 +31,9 @@ class AuthApiController(
 ) {
 
     @PostMapping("")
-    fun auth(@Valid @RequestBody request: AuthRequest): ResponseEntity<BaseResponse<AuthResponse>> {
+    fun auth(@Valid @RequestBody request: AuthRequest): ResponseEntity<Response<AuthResponse>> {
         return ResponseEntity.ok(
-            BaseResponse(
+            Response(
                 code = HttpStatus.OK.value(),
                 data = authService.auth(request),
             )
@@ -41,7 +41,7 @@ class AuthApiController(
     }
 
     @PostMapping("login")
-    fun codeLogin(@Valid @RequestBody request: CodeLoginRequest): ResponseEntity<BaseResponse<AuthenticationDto>> {
+    fun codeLogin(@Valid @RequestBody request: CodeLoginRequest): ResponseEntity<Response<AuthenticationDto>> {
         val authentication = authService.codeLogin(request)
 
         return ResponseEntity.ok()
@@ -49,7 +49,7 @@ class AuthApiController(
                 it.set("Set-Cookie", createCookie(authentication.refreshToken).toString())
             }
             .body(
-                BaseResponse(
+                Response(
                     code = HttpStatus.OK.value(),
                     data = AuthenticationDto(authentication.memberId, authentication.token),
                 )
@@ -57,9 +57,9 @@ class AuthApiController(
     }
 
     @GetMapping("verify/{code}")
-    fun verifyCode(@PathVariable("code") code: UUID): ResponseEntity<BaseResponse<VerifyCodeResponse>> {
+    fun verifyCode(@PathVariable("code") code: UUID): ResponseEntity<Response<VerifyCodeResponse>> {
         return ResponseEntity.ok(
-            BaseResponse(
+            Response(
                 code = HttpStatus.OK.value(),
                 data = authService.verifyCode(code)
             )
@@ -73,7 +73,7 @@ class AuthApiController(
     fun register(
         @Valid @RequestPart("data") request: RegisterRequest,
         @RequestPart("image") image: MultipartFile?,
-    ): ResponseEntity<BaseResponse<AuthenticationDto>> {
+    ): ResponseEntity<Response<AuthenticationDto>> {
         val authentication = authService.register(request, image)
 
         return ResponseEntity.ok(
@@ -81,7 +81,7 @@ class AuthApiController(
             it.set("Set-Cookie", createCookie(authentication.refreshToken).toString())
         }
             .body(
-                BaseResponse(
+                Response(
                     code = HttpStatus.OK.value(),
                     data = AuthenticationDto(authentication.memberId, authentication.token)
                 )
@@ -91,7 +91,7 @@ class AuthApiController(
     @PostMapping("refresh")
     fun refreshToken(
         @RequestHeader(value = "cookie") cookie: String,
-    ): ResponseEntity<BaseResponse<AuthenticationDto>> {
+    ): ResponseEntity<Response<AuthenticationDto>> {
         val refreshToken = cookie.substring(13)
         val authentication = authService.refreshToken(refreshToken)
 
@@ -101,7 +101,7 @@ class AuthApiController(
                 it.set("Set-Cookie", createCookie(authentication.refreshToken).toString())
             }
             .body(
-                BaseResponse(
+                Response(
                     code = HttpStatus.OK.value(),
                     data = AuthenticationDto(authentication.memberId, authentication.token)
                 )
