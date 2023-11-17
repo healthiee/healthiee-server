@@ -1,11 +1,12 @@
 package healthiee.rest.domain.post.api
 
+import healthiee.rest.domain.common.dto.base.Response
 import healthiee.rest.domain.member.entity.Member
 import healthiee.rest.domain.post.dto.PostSummaryDto
 import healthiee.rest.domain.post.dto.request.SavePostRequest
 import healthiee.rest.domain.post.dto.request.SearchConditionRequest
 import healthiee.rest.domain.post.dto.request.UpdatePostRequest
-import healthiee.rest.domain.common.dto.base.Response
+import healthiee.rest.domain.post.dto.response.SavePostResponse
 import healthiee.rest.domain.post.service.PostService
 import jakarta.validation.Valid
 import org.springframework.data.domain.Page
@@ -42,9 +43,14 @@ class PostApiController(
         @Valid @RequestPart("data") request: SavePostRequest,
         @RequestPart("images") images: List<MultipartFile>,
         @AuthenticationPrincipal member: Member,
-    ): ResponseEntity<Response<Any>> {
-        postService.save(request, images, member)
-        return ResponseEntity.ok(Response(code = HttpStatus.OK.value(), message = "포스트 등록이 완료되었습니다"))
+    ): ResponseEntity<Response<SavePostResponse>> {
+        return ResponseEntity.ok(
+            Response(
+                code = HttpStatus.OK.value(),
+                data = postService.save(request, images, member),
+                message = "포스트 등록이 완료되었습니다"
+            )
+        )
     }
 
     @PatchMapping("{postId}")

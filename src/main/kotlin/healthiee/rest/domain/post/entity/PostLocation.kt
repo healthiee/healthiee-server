@@ -11,10 +11,8 @@ import jakarta.persistence.Table
 @Entity
 @Table(name = "post_locations")
 class PostLocation(
-    _kakaoId: String,
     _latitude: Double,
     _longitude: Double,
-    _placeName: String,
     _addressName: String,
 ) : BaseEntity() {
 
@@ -24,19 +22,11 @@ class PostLocation(
     val id: Long = 0L
 
     @Column
-    var kakaoId: String = _kakaoId
+    var latitude: Double = _latitude // x, 위도
         private set
 
     @Column
-    var latitude: Double = _latitude // x
-        private set
-
-    @Column
-    var longitude: Double = _longitude // y
-        private set
-
-    @Column
-    var placeName: String = _placeName
+    var longitude: Double = _longitude // y, 경도
         private set
 
     @Column
@@ -45,16 +35,24 @@ class PostLocation(
 
     companion object {
         fun createLocation(
-            kakaoId: String,
             latitude: Double,
             longitude: Double,
-            placeName: String,
             addressName: String,
-        ) = PostLocation(kakaoId, latitude, longitude, placeName, addressName)
+        ) = PostLocation(latitude, longitude, addressName)
+    }
+
+    fun changeLocation(
+        latitude: Double,
+        longitude: Double,
+        addressName: String,
+    ) {
+        this.latitude = latitude
+        this.longitude = longitude
+        this.addressName = addressName
     }
 
     override fun toString(): String {
-        return "PostLocation(id=$id, kakaoId='$kakaoId', latitude='$latitude', longitude='$longitude', placeName='$placeName', addressName='$addressName')"
+        return "PostLocation(id=$id, latitude='$latitude', longitude='$longitude', addressName='$addressName')"
     }
 
 }

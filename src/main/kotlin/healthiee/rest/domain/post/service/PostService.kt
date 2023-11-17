@@ -11,6 +11,7 @@ import healthiee.rest.domain.post.dto.PostSummaryDto
 import healthiee.rest.domain.post.dto.request.SavePostRequest
 import healthiee.rest.domain.post.dto.request.SearchConditionRequest
 import healthiee.rest.domain.post.dto.request.UpdatePostRequest
+import healthiee.rest.domain.post.dto.response.SavePostResponse
 import healthiee.rest.domain.post.entity.Post
 import healthiee.rest.domain.post.entity.PostLike
 import healthiee.rest.domain.post.entity.PostLocation
@@ -51,7 +52,7 @@ class PostService(
 ) {
 
     @Transactional
-    fun save(request: SavePostRequest, images: List<MultipartFile>, member: Member) {
+    fun save(request: SavePostRequest, images: List<MultipartFile>, member: Member): SavePostResponse {
         if (images.isEmpty()) throw ApiException(BAD_REQUEST, "포스트 이미지를 넣어주세요")
         val categoryCode: Code? =
             request.categoryId?.let {
@@ -62,14 +63,13 @@ class PostService(
             }
 
         val location: PostLocation? = request.location?.let {
-            postLocationRepository.findByKakaoId(it.id)
-                ?: PostLocation.createLocation(
-                    it.id,
-                    it.latitude,
-                    it.longitude,
-                    it.placeName,
-                    it.addressName,
-                ).also { post -> postLocationRepository.save(post) }
+            it.id?.let { id ->
+                postLocationRepository.findByIdOrNull(id)
+            } ?: PostLocation.createLocation(
+                it.latitude,
+                it.longitude,
+                it.addressName,
+            ).also { post -> postLocationRepository.save(post) }
         }
 
         val medias = mutableListOf<PostMedia>()
@@ -90,6 +90,8 @@ class PostService(
             postMedias = medias.toTypedArray()
         )
         postRepository.save(post)
+
+        return SavePostResponse(post.id)
     }
 
     @Transactional
@@ -105,14 +107,14 @@ class PostService(
                 )
             }
         val location: PostLocation? = request.location?.let {
-            postLocationRepository.findByKakaoId(it.id)
-                ?: PostLocation.createLocation(
-                    it.id,
-                    it.latitude,
-                    it.longitude,
-                    it.placeName,
-                    it.addressName,
-                ).also { post -> postLocationRepository.save(post) }
+            it.id?.let { id ->
+                postLocationRepository.findByIdOrNull(id)
+                    ?.apply { changeLocation(it.latitude, it.longitude, it.addressName) }
+            } ?: PostLocation.createLocation(
+                it.latitude,
+                it.longitude,
+                it.addressName,
+            ).also { post -> postLocationRepository.save(post) }
         }
         post.changeContent(category, location, request.content, request.mediaIds)
     }
