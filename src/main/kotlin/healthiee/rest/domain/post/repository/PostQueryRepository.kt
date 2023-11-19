@@ -50,7 +50,7 @@ class PostQueryRepository(
     }
 
     fun findById(postId: UUID): Post? {
-        val findPost = selectFrom(post)
+        return selectFrom(post)
             .leftJoin(post.category)
             .fetchJoin()
             .leftJoin(post.location)
@@ -62,10 +62,6 @@ class PostQueryRepository(
                 deletedEq(false)
             )
             .fetchOne()
-
-        findPost?.let { it.updateMedias(postMediaQueryRepository.findByPostId(it.id)) }
-
-        return findPost
     }
 
     private fun idEq(id: UUID): BooleanExpression = post.id.eq(id)

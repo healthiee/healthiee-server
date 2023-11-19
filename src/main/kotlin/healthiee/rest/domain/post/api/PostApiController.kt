@@ -2,7 +2,7 @@ package healthiee.rest.domain.post.api
 
 import healthiee.rest.domain.common.dto.base.Response
 import healthiee.rest.domain.member.entity.Member
-import healthiee.rest.domain.post.dto.PostSummaryDto
+import healthiee.rest.domain.post.dto.PostDto
 import healthiee.rest.domain.post.dto.request.SavePostRequest
 import healthiee.rest.domain.post.dto.request.SearchConditionRequest
 import healthiee.rest.domain.post.dto.request.UpdatePostRequest
@@ -79,11 +79,11 @@ class PostApiController(
         pageable: Pageable,
         searchCondition: SearchConditionRequest,
         @AuthenticationPrincipal member: Member,
-    ): ResponseEntity<Response<Page<PostSummaryDto>>> {
+    ): ResponseEntity<Response<Page<PostDto>>> {
         return ResponseEntity.ok(
             Response(
                 code = HttpStatus.OK.value(),
-                data = postService.findAll(pageable, searchCondition, member),
+                data = postService.getPosts(pageable, searchCondition, member),
             )
         )
     }
@@ -96,6 +96,9 @@ class PostApiController(
         return ResponseEntity.ok(Response(code = HttpStatus.OK.value(), message = "포스트 조회"))
     }
 
+    /**
+     * 포스트 좋아요
+     */
     @PostMapping("{postId}/like")
     @PreAuthorize("hasRole('MEMBER') or hasRole('ADMIN')")
     fun likePost(

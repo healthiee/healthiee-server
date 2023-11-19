@@ -1,14 +1,23 @@
 package healthiee.rest.domain.post.dto
 
-import healthiee.rest.domain.post.entity.Post
 import healthiee.rest.domain.common.dto.media.MediaDto
 import healthiee.rest.domain.common.dto.media.toDto
 import healthiee.rest.domain.member.dto.MemberSummaryDto
 import healthiee.rest.domain.member.dto.toSummaryDto
+import healthiee.rest.domain.post.entity.Post
 import java.time.LocalDateTime
 import java.util.*
 
-data class PostSummaryDto(
+abstract class PostBaseDto {
+    abstract val postId: UUID
+}
+
+data class PostDefaultDto(
+    override val postId: UUID,
+) : PostBaseDto()
+
+
+data class PostDto(
     val postId: UUID,
     val category: PostCategoryDto?,
     val content: String,
@@ -25,7 +34,7 @@ data class PostSummaryDto(
         fun create(
             post: Post,
             liked: Boolean,
-        ) = PostSummaryDto(
+        ) = PostDto(
             post.id,
             post.category?.toCategoryDto(),
             post.content,

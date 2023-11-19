@@ -6,8 +6,8 @@ import healthiee.rest.domain.code.repository.CodeRepository
 import healthiee.rest.domain.common.entity.media.MediaType
 import healthiee.rest.domain.follow.repository.FollowQueryRepository
 import healthiee.rest.domain.member.entity.Member
+import healthiee.rest.domain.post.dto.PostDto
 import healthiee.rest.domain.post.dto.PostSearchCondition
-import healthiee.rest.domain.post.dto.PostSummaryDto
 import healthiee.rest.domain.post.dto.request.SavePostRequest
 import healthiee.rest.domain.post.dto.request.SearchConditionRequest
 import healthiee.rest.domain.post.dto.request.UpdatePostRequest
@@ -19,6 +19,7 @@ import healthiee.rest.domain.post.entity.PostMedia
 import healthiee.rest.domain.post.repository.PostLikeQueryRepository
 import healthiee.rest.domain.post.repository.PostLikeRepository
 import healthiee.rest.domain.post.repository.PostLocationRepository
+import healthiee.rest.domain.post.repository.PostMediaQueryRepository
 import healthiee.rest.domain.post.repository.PostMediaRepository
 import healthiee.rest.domain.post.repository.PostQueryRepository
 import healthiee.rest.domain.post.repository.PostRepository
@@ -48,6 +49,7 @@ class PostService(
     private val codeQueryRepository: CodeQueryRepository,
     private val followQueryRepository: FollowQueryRepository,
     private val postLikeQueryRepository: PostLikeQueryRepository,
+    private val postMediaQueryRepository: PostMediaQueryRepository,
     private val s3Uploader: S3Uploader,
 ) {
 
@@ -126,11 +128,11 @@ class PostService(
         post.delete()
     }
 
-    fun findAll(
+    fun getPosts(
         pageable: Pageable,
         request: SearchConditionRequest,
         member: Member,
-    ): Page<PostSummaryDto> {
+    ): Page<PostDto> {
         val categories: MutableList<Code> = mutableListOf()
         if (request.categoryIds.isNotEmpty()) {
             categories.addAll(codeQueryRepository.findAllByIds(request.categoryIds))
@@ -143,7 +145,7 @@ class PostService(
         )
 
         return postQueryRepository.findAll(pageable, searchCondition).map {
-            PostSummaryDto.create(it, it.postLikes.any { postLike -> postLike.member.id == member.id })
+            PostDto.create(it, it.postLikes.any { postLike -> postLike.member.id == member.id })
         }
     }
 
@@ -169,8 +171,11 @@ class PostService(
         return getValidPost(postId)
     }
 
-    fun getValidPost(postId: UUID): Post {
-        return postQueryRepository.findById(postId) ?: throw ApiException(NOT_FOUND, "게시물을 찾을 수 없습니다")
+    private fun getValidPost(postId: UUID): Post {
+        val validPost = postQueryRepository.findById(postId) ?: throw ApiException(NOT_FOUND, "게시물을 찾을 수 없습니다")
+        validPost.updateMedias(postMediaQueryRepository.findByPostId(validPost.id))
+        return validPost
+
     }
 
     private fun validateUpdatePermission(post: Post, member: Member) {

@@ -1,4 +1,4 @@
-package healthiee.rest.domain.post.entity
+package healthiee.rest.domain.comment.entity
 
 import healthiee.rest.domain.common.entity.base.BaseEntity
 import healthiee.rest.domain.member.entity.Member
@@ -13,23 +13,23 @@ import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 
 @Entity
-@Table(name = "post_likes")
-class PostLike(
+@Table(name = "post_comment_likes")
+class PostCommentLike(
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     val member: Member,
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "post_id")
-    var post: Post,
+    @JoinColumn(name = "post_comment_id")
+    var postComment: PostComment,
 ) : BaseEntity() {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "post_like_id")
+    @Column(name = "post_comment_like_id")
     val id: Long = 0L
 
     companion object {
-        fun createPostLike(member: Member, post: Post) = PostLike(member, post)
+        fun createPostCommentLike(member: Member, postComment: PostComment) = PostCommentLike(member, postComment)
     }
 
 }
