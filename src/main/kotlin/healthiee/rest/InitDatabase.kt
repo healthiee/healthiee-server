@@ -41,8 +41,13 @@ class InitDatabase(
 
     private fun saveCodes() {
         val code1Name = "오운완"
-        val code2Name = "핫플레이스"
-        val code3Name = "일상"
+        val code2Name = "멤버 모집"
+        val code3Name = "장비 소개"
+        val code4Name = "중고 거래"
+        val code5Name = "동네 맛집"
+        val code6Name = "운동 소식"
+        val code7Name = "일상"
+        val code8Name = "추천 플레이스"
 
         if (codeRepository.findByName(code1Name) == null) {
             codeRepository.save(Code.createCode(Code.Type.POST_CATEGORY, code1Name))
@@ -52,6 +57,21 @@ class InitDatabase(
         }
         if (codeRepository.findByName(code3Name) == null) {
             codeRepository.save(Code.createCode(Code.Type.POST_CATEGORY, code3Name))
+        }
+        if (codeRepository.findByName(code4Name) == null) {
+            codeRepository.save(Code.createCode(Code.Type.POST_CATEGORY, code4Name))
+        }
+        if (codeRepository.findByName(code5Name) == null) {
+            codeRepository.save(Code.createCode(Code.Type.POST_CATEGORY, code5Name))
+        }
+        if (codeRepository.findByName(code6Name) == null) {
+            codeRepository.save(Code.createCode(Code.Type.POST_CATEGORY, code6Name))
+        }
+        if (codeRepository.findByName(code7Name) == null) {
+            codeRepository.save(Code.createCode(Code.Type.POST_CATEGORY, code7Name))
+        }
+        if (codeRepository.findByName(code8Name) == null) {
+            codeRepository.save(Code.createCode(Code.Type.POST_CATEGORY, code8Name))
         }
     }
 
@@ -92,9 +112,17 @@ class InitDatabase(
         val member3Email = "member3@gmail.com"
         val member3Nickname = "member3"
 
-        val hashtag = Hashtag.createHashtag("크로스핏")
+        val hashtag1 = Hashtag.createHashtag("크로스핏")
+        val hashtag2 = Hashtag.createHashtag("테니스")
+        val hashtag3 = Hashtag.createHashtag("헬스")
         if (hashtagRepository.findByName("크로스핏") == null) {
-            hashtagRepository.save(hashtag)
+            hashtagRepository.save(hashtag1)
+        }
+        if (hashtagRepository.findByName("테니스") == null) {
+            hashtagRepository.save(hashtag2)
+        }
+        if (hashtagRepository.findByName("헬스") == null) {
+            hashtagRepository.save(hashtag3)
         }
 
         if (memberRepository.findByEmail(member1Email) == null) {
@@ -106,7 +134,7 @@ class InitDatabase(
                         password = passwordEncoder.encode(member1Nickname),
                         name = member1Nickname,
                         nickname = member1Nickname,
-                        workoutHashtags = listOf(hashtag)
+                        workoutHashtags = listOf(hashtag1, hashtag2, hashtag3)
                     )
                 )
             )
