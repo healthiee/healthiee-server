@@ -19,6 +19,9 @@ class FollowService(
 
     @Transactional
     fun follow(member: Member, targetMember: Member) {
+        if (member.id == targetMember.id) {
+            throw ApiException(BAD_REQUEST, "잘못된 요청입니다")
+        }
         val findFollow = queryRepository.findByMember(member.id, targetMember.id)
         findFollow?.let { throw ApiException(BAD_REQUEST, "이미 팔로우를 한 이력이 있습니다") }
 
@@ -27,6 +30,9 @@ class FollowService(
 
     @Transactional
     fun unfollow(member: Member, targetMember: Member) {
+        if (member.id == targetMember.id) {
+            throw ApiException(BAD_REQUEST, "잘못된 요청입니다")
+        }
         val findFollow = queryRepository.findByMember(member.id, targetMember.id)
             ?: throw ApiException(NOT_FOUND, "팔로우한 이력이 없습니다")
 

@@ -39,7 +39,7 @@ class CommentApiController(
             Response(
                 code = HttpStatus.OK.value(),
                 data = commentService.createComment(request, member),
-                message = "게시글 생성이 완료되었습니다"
+                message = "댓글 생성이 완료되었습니다"
             )
         )
     }
@@ -54,7 +54,7 @@ class CommentApiController(
         return ResponseEntity.ok(
             Response(
                 code = HttpStatus.OK.value(),
-                message = "게시글 수정이 완료되었습니다",
+                message = "댓글 수정이 완료되었습니다",
             )
         )
     }
@@ -68,7 +68,7 @@ class CommentApiController(
         return ResponseEntity.ok(
             Response(
                 code = HttpStatus.OK.value(),
-                message = "게시글 삭제가 완료되었습니다",
+                message = "댓글 삭제가 완료되었습니다",
             )
         )
     }
