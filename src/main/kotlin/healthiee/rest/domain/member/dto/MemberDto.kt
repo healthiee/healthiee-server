@@ -19,15 +19,6 @@ data class MemberDefaultDto(
     override val profileUrl: String?,
 ) : MemberBaseDto()
 
-data class MemberSummaryDto(
-    override val memberId: UUID,
-    override val email: String,
-    override val name: String,
-    override val nickname: String,
-    override val profileUrl: String?,
-    val workouts: List<String>,
-) : MemberBaseDto()
-
 data class MemberDto(
     override val memberId: UUID,
     override val email: String,
@@ -60,15 +51,6 @@ data class MemberDto(
         )
     }
 }
-
-fun Member.toSummaryDto() = MemberSummaryDto(
-    this.id,
-    this.email,
-    this.name,
-    this.nickname,
-    this.profileUrl,
-    this.workoutHashtags.map { it.name },
-)
 
 fun Member.toDefaultDto() = MemberDefaultDto(
     this.id,

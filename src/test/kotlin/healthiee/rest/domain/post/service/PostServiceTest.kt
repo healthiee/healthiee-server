@@ -63,7 +63,7 @@ class PostServiceTest {
             member = findMember,
             content = content,
             location = null,
-            postMedias = medias.toTypedArray()
+            postMedias = medias,
         )
         postRepository.save(post)
 
@@ -105,7 +105,7 @@ class PostServiceTest {
             member = findMember,
             content = content,
             location = location,
-            postMedias = medias.toTypedArray()
+            postMedias = medias,
         )
         postRepository.save(post)
 
@@ -149,7 +149,7 @@ class PostServiceTest {
             member = findMember,
             content = content,
             location = location,
-            postMedias = medias.toTypedArray()
+            postMedias = medias,
         )
         postRepository.save(post)
 
@@ -159,6 +159,7 @@ class PostServiceTest {
             listOf(1L),
             null,
             PostLocationRequest(location.id, 37.47950249307712, 126.92237388636343, "서울특별시 관악구 남부순환로156길 39"),
+            listOf(),
         )
         postService.update(post.id, request, findMember)
         val findPost = postService.findById(post.id)

@@ -13,9 +13,7 @@ import org.springframework.stereotype.Repository
 import java.util.*
 
 @Repository
-class PostQueryRepository(
-    private val postMediaQueryRepository: PostMediaQueryRepository,
-) : QuerydslRepositorySupport(Post::class.java) {
+class PostQueryRepository : QuerydslRepositorySupport(Post::class.java) {
 
     fun findAll(
         pageable: Pageable,
@@ -34,6 +32,7 @@ class PostQueryRepository(
                     .where(
                         membersIn(searchCondition.members),
                         categoriesIn(searchCondition.categories),
+                        deletedEq(false),
                     )
                     .offset(pageable.offset)
                     .limit(pageable.pageSize.toLong())
@@ -44,6 +43,7 @@ class PostQueryRepository(
                     .where(
                         membersIn(searchCondition.members),
                         categoriesIn(searchCondition.categories),
+                        deletedEq(false),
                     )
             }
         )

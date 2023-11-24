@@ -1,7 +1,8 @@
 package healthiee.rest.domain.post.entity
 
-import healthiee.rest.domain.common.entity.base.BaseEntity
 import healthiee.rest.domain.code.entity.Code
+import healthiee.rest.domain.common.entity.base.BaseEntity
+import healthiee.rest.domain.hashtag.entity.Hashtag
 import healthiee.rest.domain.member.entity.Member
 import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
@@ -9,6 +10,8 @@ import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
+import jakarta.persistence.JoinTable
+import jakarta.persistence.ManyToMany
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
 import jakarta.persistence.OneToOne
@@ -62,6 +65,14 @@ class Post(
     @Column(nullable = false)
     var commentCount: Int = 0
         private set
+
+    @ManyToMany
+    @JoinTable(
+        name = "post_hashtag",
+        joinColumns = [JoinColumn(name = "post_id")],
+        inverseJoinColumns = [JoinColumn(name = "hashtag_id")]
+    )
+    val postHashTags: MutableList<Hashtag> = mutableListOf()
 
     fun changeContent(
         category: Code?,
@@ -122,10 +133,17 @@ class Post(
             member: Member,
             content: String,
             location: PostLocation?,
-            vararg postMedias: PostMedia,
+            postMedias: List<PostMedia> = listOf(),
+            postHashtags: List<Hashtag> = listOf(),
         ) = Post(postId, category, member, content, location).apply {
             postMedias.forEach { addMedia(it) }
+            this.postHashTags.addAll(postHashtags)
         }
+    }
+
+    fun changeHashtags(hashtags: List<Hashtag>) {
+        this.postHashTags.clear()
+        this.postHashTags.addAll(hashtags)
     }
 
     override fun toString(): String {

@@ -14,6 +14,7 @@ data class UpdatePostRequest(
     private val _mediaIds: List<Long>?,
     val categoryId: Long?,
     val location: PostLocationRequest?,
+    val hashtags: List<String>?,
 ) {
     val content: String
         get() = _content!!

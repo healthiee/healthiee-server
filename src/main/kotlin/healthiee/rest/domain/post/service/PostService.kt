@@ -5,6 +5,8 @@ import healthiee.rest.domain.code.repository.CodeQueryRepository
 import healthiee.rest.domain.code.repository.CodeRepository
 import healthiee.rest.domain.common.entity.media.MediaType
 import healthiee.rest.domain.follow.repository.FollowQueryRepository
+import healthiee.rest.domain.hashtag.entity.Hashtag
+import healthiee.rest.domain.hashtag.repository.HashtagRepository
 import healthiee.rest.domain.member.entity.Member
 import healthiee.rest.domain.post.dto.PostDto
 import healthiee.rest.domain.post.dto.PostSearchCondition
@@ -45,6 +47,7 @@ class PostService(
     private val codeRepository: CodeRepository,
     private val postLocationRepository: PostLocationRepository,
     private val postLikeRepository: PostLikeRepository,
+    private val hashtagRepository: HashtagRepository,
     private val postQueryRepository: PostQueryRepository,
     private val codeQueryRepository: CodeQueryRepository,
     private val followQueryRepository: FollowQueryRepository,
@@ -74,6 +77,20 @@ class PostService(
             ).also { post -> postLocationRepository.save(post) }
         }
 
+        val postHashtags = mutableListOf<Hashtag>()
+        if (request.hashtags != null) {
+            val newHashtags = mutableListOf<Hashtag>()
+            request.hashtags.forEach {
+                hashtagRepository.findByName(it)?.let { hashtag ->
+                    postHashtags.add(hashtag)
+                } ?: run {
+                    newHashtags.add(Hashtag.createHashtag(it))
+                }
+            }
+            hashtagRepository.saveAll(newHashtags)
+            postHashtags.addAll(newHashtags)
+        }
+
         val medias = mutableListOf<PostMedia>()
         images.forEach {
             if (!it.isEmpty) {
@@ -89,7 +106,8 @@ class PostService(
             member = member,
             content = request.content,
             location = location,
-            postMedias = medias.toTypedArray()
+            postMedias = medias,
+            postHashtags = postHashtags,
         )
         postRepository.save(post)
 
@@ -118,7 +136,23 @@ class PostService(
                 it.addressName,
             ).also { post -> postLocationRepository.save(post) }
         }
+
+        val postHashtags = mutableListOf<Hashtag>()
+        if (request.hashtags != null) {
+            val newHashtags = mutableListOf<Hashtag>()
+            request.hashtags.forEach {
+                hashtagRepository.findByName(it)?.let { hashtag ->
+                    postHashtags.add(hashtag)
+                } ?: run {
+                    newHashtags.add(Hashtag.createHashtag(it))
+                }
+            }
+            hashtagRepository.saveAll(newHashtags)
+            postHashtags.addAll(newHashtags)
+        }
+
         post.changeContent(category, location, request.content, request.mediaIds)
+        post.changeHashtags(postHashtags)
     }
 
     @Transactional
@@ -147,6 +181,11 @@ class PostService(
         return postQueryRepository.findAll(pageable, searchCondition).map {
             PostDto.create(it, it.postLikes.any { postLike -> postLike.member.id == member.id })
         }
+    }
+
+    fun getPost(postId: UUID, member: Member): PostDto {
+        val findPost = postQueryRepository.findById(postId) ?: throw ApiException(NOT_FOUND, "존재 하지 않는 멤버입니다")
+        return PostDto.create(findPost, findPost.postLikes.any { postLike -> postLike.member.id == member.id })
     }
 
     @Transactional

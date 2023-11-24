@@ -219,7 +219,7 @@ class InitDatabase(
                 member = findMember1,
                 content = content1,
                 location = null,
-                postMedias = medias.toTypedArray(),
+                postMedias = medias,
             )
             postRepository.save(post)
         }

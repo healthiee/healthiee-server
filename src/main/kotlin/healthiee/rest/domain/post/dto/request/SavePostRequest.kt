@@ -10,6 +10,7 @@ data class SavePostRequest(
     private val _content: String?,
     val categoryId: Long?,
     val location: PostLocationRequest?,
+    val hashtags: List<String>?,
 ) {
     val content: String
         get() = _content!!

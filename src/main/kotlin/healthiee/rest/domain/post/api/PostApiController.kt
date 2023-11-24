@@ -92,8 +92,9 @@ class PostApiController(
     @PreAuthorize("hasRole('MEMBER') or hasRole('ADMIN')")
     fun getPost(
         @PathVariable("postId") postId: UUID,
-    ): ResponseEntity<Response<Any>> {
-        return ResponseEntity.ok(Response(code = HttpStatus.OK.value(), message = "포스트 조회"))
+        @AuthenticationPrincipal member: Member,
+    ): ResponseEntity<Response<PostDto>> {
+        return ResponseEntity.ok(Response(code = HttpStatus.OK.value(), data = postService.getPost(postId, member)))
     }
 
     /**
