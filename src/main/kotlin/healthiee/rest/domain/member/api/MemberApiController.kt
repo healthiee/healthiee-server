@@ -18,24 +18,26 @@ import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import java.util.*
 
 @RestController
+@RequestMapping("v1/members")
 class MemberApiController(
     private val memberService: MemberService,
     private val followService: FollowService,
     private val memberRepository: MemberRepository,
 ) {
 
-    @GetMapping("/v1/members/{memberId}")
+    @GetMapping("{memberId}")
     @PreAuthorize("hasRole('MEMBER') or hasRole('ADMIN')")
     fun getMember(
         @PathVariable("memberId") memberId: UUID,
     ): ResponseEntity<Response<MemberDto>> =
         ResponseEntity.ok(Response(code = HttpStatus.OK.value(), data = memberService.getMember(memberId)))
 
-    @GetMapping("/v1/members/{nickname}/check")
+    @GetMapping("{nickname}/check")
     fun checkMember(
         @PathVariable("nickname") nickname: String,
     ): ResponseEntity<Response<CheckMemberResponse>> {
@@ -43,7 +45,7 @@ class MemberApiController(
         return ResponseEntity.ok(Response(code = HttpStatus.OK.value(), data = CheckMemberResponse(exist)))
     }
 
-    @PostMapping("/v1/members/{memberId}/follow")
+    @PostMapping("{memberId}/follow")
     @PreAuthorize("hasRole('MEMBER')")
     fun followMember(
         @AuthenticationPrincipal member: Member,
@@ -62,7 +64,7 @@ class MemberApiController(
         )
     }
 
-    @DeleteMapping("/v1/members/{memberId}/follow")
+    @DeleteMapping("{memberId}/follow")
     @PreAuthorize("hasRole('MEMBER')")
     fun unfollowMember(
         @AuthenticationPrincipal member: Member,

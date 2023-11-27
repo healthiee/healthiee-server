@@ -40,7 +40,7 @@ data class PostDto(
             post.category?.toCategoryDto(),
             post.content,
             post.medias.map { it.toDto() },
-            mergeHashtags(post.postHashTags.map { it.name }, post.member.workoutHashtags.map { it.name }),
+            post.postHashTags.map { it.name },
             post.member.toDefaultDto(),
             post.location?.toDto(),
             post.likeCount,
@@ -49,10 +49,6 @@ data class PostDto(
             post.createdDate,
         )
 
-        private fun mergeHashtags(hashtags: List<String>, workouts: List<String>): List<String> {
-            return (hashtags + workouts).distinct()
-        }
     }
-
 
 }

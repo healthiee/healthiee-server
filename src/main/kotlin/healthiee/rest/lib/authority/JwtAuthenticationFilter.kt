@@ -1,25 +1,56 @@
 package healthiee.rest.lib.authority
 
+import com.google.gson.GsonBuilder
+import healthiee.rest.domain.common.dto.base.Response
+import healthiee.rest.lib.gson.LocalDateTimeSerializer
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
+import org.springframework.http.HttpStatus
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource
 import org.springframework.stereotype.Component
 import org.springframework.web.filter.OncePerRequestFilter
+import java.time.LocalDateTime
 
 @Component
 class JwtAuthenticationFilter constructor(
     private val jwtTokenProvider: JwtTokenProvider,
     private val userDetailsService: UserDetailsService,
 ) : OncePerRequestFilter() {
+
+    private val gsonBuilder by lazy {
+        return@lazy GsonBuilder().apply {
+            registerTypeAdapter(LocalDateTime::class.java, LocalDateTimeSerializer())
+        }
+    }
+
+    private val gson by lazy {
+        return@lazy gsonBuilder.setPrettyPrinting().create()
+    }
+
     override fun doFilterInternal(
         request: HttpServletRequest,
         response: HttpServletResponse,
         filterChain: FilterChain,
     ) {
+        if (request.getHeader("Authorization") == null) {
+            response.status = HttpStatus.UNAUTHORIZED.value()
+            response.contentType = "application/json; charset=utf-8;"
+            response.characterEncoding = "utf-8"
+
+            val errorResponse = Response<Any>(
+                code = HttpStatus.UNAUTHORIZED.value(),
+                data = null,
+                message = "권한이 없습니다",
+                timestamp = LocalDateTime.now(),
+            )
+
+            response.writer.write(gson.toJson(errorResponse))
+            return
+        }
         val authHeader = request.getHeader("Authorization")
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response)

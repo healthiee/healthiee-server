@@ -79,7 +79,7 @@ class CommentService(
 
             CommentDto.create(
                 comment = it,
-                recomments = it.childComments.filterIndexed { index, _ -> index < 1 }.map { postComment ->
+                recomments = it.childComments.filterIndexed { index, _ -> index < 3 }.map { postComment ->
                     RecommentDto.create(
                         postComment,
                         postComment.commentLikes.any { commentLike -> commentLike.member.id == member.id })

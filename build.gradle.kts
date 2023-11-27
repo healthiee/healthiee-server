@@ -10,7 +10,7 @@ plugins {
 }
 
 group = "healthiee"
-version = "0.1.10"
+version = "0.1.11"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17
@@ -26,6 +26,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
     implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("com.google.code.gson:gson")
 
     // querydsl
     api("com.querydsl:querydsl-jpa:5.0.0:jakarta")
