@@ -36,6 +36,14 @@ class JwtAuthenticationFilter constructor(
         response: HttpServletResponse,
         filterChain: FilterChain,
     ) {
+        // whitelist
+        if (request.servletPath.contains("/v1/auth") ||
+            (request.servletPath.contains("/v1/members") && request.servletPath.contains("check"))
+        ) {
+            filterChain.doFilter(request, response)
+            return
+        }
+        // authorization 없을시 401 에러 반환
         if (request.getHeader("Authorization") == null) {
             response.status = HttpStatus.UNAUTHORIZED.value()
             response.contentType = "application/json; charset=utf-8;"
@@ -51,12 +59,8 @@ class JwtAuthenticationFilter constructor(
             response.writer.write(gson.toJson(errorResponse))
             return
         }
+        // authorization parsing
         val authHeader = request.getHeader("Authorization")
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            filterChain.doFilter(request, response)
-            return
-        }
-
         val jwt = authHeader.substring(7)
         val memberId = jwtTokenProvider.extractUsername(jwt)
         if (memberId != null && SecurityContextHolder.getContext().authentication == null) {
