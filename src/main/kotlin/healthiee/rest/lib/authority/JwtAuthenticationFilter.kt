@@ -38,7 +38,8 @@ class JwtAuthenticationFilter constructor(
     ) {
         // whitelist
         if (request.servletPath.contains("/v1/auth") ||
-            (request.servletPath.contains("/v1/members") && request.servletPath.contains("check"))
+            (request.servletPath.contains("/v1/members") && request.servletPath.contains("check")) ||
+            request.servletPath.contains("h2-console")
         ) {
             filterChain.doFilter(request, response)
             return

@@ -14,7 +14,6 @@ import jakarta.persistence.JoinTable
 import jakarta.persistence.ManyToMany
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
-import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import java.util.*
 
@@ -32,7 +31,7 @@ class Post(
     @Column(name = "post_id")
     val id: UUID = _postId
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "code_id", nullable = true)
     var category: Code? = _category
         private set

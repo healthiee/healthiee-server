@@ -2,11 +2,16 @@ package healthiee.rest.domain.workout.service
 
 import healthiee.rest.domain.member.entity.Member
 import healthiee.rest.domain.workout.dto.SearchCondition
+import healthiee.rest.domain.workout.dto.WorkoutDto
+import healthiee.rest.domain.workout.dto.request.SearchConditionRequest
+import healthiee.rest.domain.workout.dto.response.GetWorkoutsResponse
 import healthiee.rest.domain.workout.entity.WorkoutOfTheDay
 import healthiee.rest.domain.workout.repository.WorkoutOfTheDayQueryRepository
 import healthiee.rest.domain.workout.repository.WorkoutOfTheDayRepository
 import healthiee.rest.lib.error.ApiException
 import healthiee.rest.lib.error.ErrorCode.BAD_REQUEST
+import healthiee.rest.lib.error.ErrorCode.FORBIDDEN
+import healthiee.rest.lib.error.ErrorCode.NOT_FOUND
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
@@ -26,6 +31,30 @@ class WorkoutOfTheDayService(
         repository.save(workoutOfTheDay)
 
         return workoutOfTheDay.id
+    }
+
+    @Transactional
+    fun delete(workoutOfTheDayId: Long, member: Member) {
+        val workout = validWorkout(workoutOfTheDayId)
+        if (workout.member.id != member.id) {
+            throw ApiException(FORBIDDEN, "삭제할 수 없습니다")
+        }
+        workout.delete()
+    }
+
+    fun getWorkouts(request: SearchConditionRequest, member: Member): GetWorkoutsResponse {
+        val condition = SearchCondition(
+            memberId = member.id,
+            month = request.month ?: LocalDateTime.now().monthValue,
+        )
+
+        val findAll = queryRepository.findAll(condition)
+        return GetWorkoutsResponse(findAll.map { WorkoutDto(it.id, it.workoutDate) })
+    }
+
+    private fun validWorkout(workoutOfTheDayId: Long): WorkoutOfTheDay {
+        return queryRepository.findById(workoutOfTheDayId)
+            ?: throw ApiException(NOT_FOUND, "오운완 이력이 없습니다")
     }
 
     private fun validateExistWorkoutHistory(member: Member) {

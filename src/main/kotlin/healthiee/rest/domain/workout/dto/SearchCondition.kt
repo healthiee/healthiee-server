@@ -5,5 +5,6 @@ import java.util.*
 
 data class SearchCondition(
     val memberId: UUID,
-    val workoutDate: LocalDateTime,
+    val workoutDate: LocalDateTime? = null, // 특정날짜와 일치
+    val month: Int? = null, // 특정 월(달)과 일치
 )
