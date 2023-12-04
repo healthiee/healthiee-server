@@ -9,8 +9,10 @@ import healthiee.rest.domain.post.entity.Post
 import healthiee.rest.domain.post.entity.PostLocation
 import healthiee.rest.domain.post.entity.PostMedia
 import healthiee.rest.domain.post.repository.PostLocationRepository
+import healthiee.rest.domain.post.repository.PostMediaRepository
 import healthiee.rest.domain.post.repository.PostQueryRepository
 import healthiee.rest.domain.post.repository.PostRepository
+import jakarta.persistence.EntityManager
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -22,10 +24,16 @@ import org.springframework.transaction.annotation.Transactional
 class PostServiceTest {
 
     @Autowired
+    private lateinit var em: EntityManager
+
+    @Autowired
     private lateinit var postService: PostService
 
     @Autowired
     private lateinit var postRepository: PostRepository
+
+    @Autowired
+    private lateinit var postMediaRepository: PostMediaRepository
 
     @Autowired
     private lateinit var postLocationRepository: PostLocationRepository
@@ -53,19 +61,20 @@ class PostServiceTest {
 
         val findMember = memberRepository.findByEmail(member1Email) ?: return
 
-        val medias = listOf(
-            PostMedia.createPostMedia(MediaType.IMAGE, "url1"),
-            PostMedia.createPostMedia(MediaType.IMAGE, "url2")
-        )
-
         val post = Post.createPost(
             category = null,
             member = findMember,
             content = content,
             location = null,
-            postMedias = medias,
         )
         postRepository.save(post)
+
+        val medias = listOf(
+            PostMedia.createPostMedia(MediaType.IMAGE, "url1", post),
+            PostMedia.createPostMedia(MediaType.IMAGE, "url2", post),
+        )
+        postMediaRepository.saveAll(medias)
+        em.clear()
 
         // when
         val findPost = postService.findById(post.id)
@@ -92,7 +101,6 @@ class PostServiceTest {
 
         val findMember = memberRepository.findByEmail(member1Email) ?: return
 
-        val medias = listOf(PostMedia.createPostMedia(MediaType.IMAGE, "url1"))
         val location = PostLocation.createLocation(
             latitude = latitude,
             longitude = longitude,
@@ -105,9 +113,11 @@ class PostServiceTest {
             member = findMember,
             content = content,
             location = location,
-            postMedias = medias,
         )
         postRepository.save(post)
+
+        val medias = listOf(PostMedia.createPostMedia(MediaType.IMAGE, "url1", post))
+        postMediaRepository.saveAll(medias)
 
         // when
         val findPost = postService.findById(post.id)
@@ -136,7 +146,6 @@ class PostServiceTest {
 
         val findMember = memberRepository.findByEmail(member1Email) ?: return
 
-        val medias = listOf(PostMedia.createPostMedia(MediaType.IMAGE, "url1"))
         val location = PostLocation.createLocation(
             latitude = latitude,
             longitude = longitude,
@@ -149,9 +158,10 @@ class PostServiceTest {
             member = findMember,
             content = content,
             location = location,
-            postMedias = medias,
         )
         postRepository.save(post)
+        val medias = listOf(PostMedia.createPostMedia(MediaType.IMAGE, "url1", post))
+        postMediaRepository.saveAll(medias)
 
         // when
         val request = UpdatePostRequest(
