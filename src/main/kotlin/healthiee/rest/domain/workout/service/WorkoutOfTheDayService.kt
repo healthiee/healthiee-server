@@ -3,7 +3,6 @@ package healthiee.rest.domain.workout.service
 import healthiee.rest.domain.member.entity.Member
 import healthiee.rest.domain.workout.dto.SearchCondition
 import healthiee.rest.domain.workout.dto.WorkoutDto
-import healthiee.rest.domain.workout.dto.request.SearchConditionRequest
 import healthiee.rest.domain.workout.dto.response.GetWorkoutsResponse
 import healthiee.rest.domain.workout.entity.WorkoutOfTheDay
 import healthiee.rest.domain.workout.repository.WorkoutOfTheDayQueryRepository
@@ -14,7 +13,9 @@ import healthiee.rest.lib.error.ErrorCode.FORBIDDEN
 import healthiee.rest.lib.error.ErrorCode.NOT_FOUND
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.Duration
 import java.time.LocalDateTime
+import java.time.YearMonth
 
 @Service
 @Transactional(readOnly = true)
@@ -42,14 +43,33 @@ class WorkoutOfTheDayService(
         workout.delete()
     }
 
-    fun getWorkouts(request: SearchConditionRequest, member: Member): GetWorkoutsResponse {
-        val condition = SearchCondition(
-            memberId = member.id,
-            month = request.month ?: LocalDateTime.now().monthValue,
-        )
+    fun getWorkouts(date: YearMonth, member: Member): GetWorkoutsResponse {
+        val condition = SearchCondition(memberId = member.id, yearMonth = date)
+        val findCountCondition = SearchCondition(memberId = member.id)
+        val now = LocalDateTime.now()
+        val workoutDate = LocalDateTime.of(now.year, now.monthValue, now.dayOfMonth, 0, 0, 0)
+        val workedOutCondition = SearchCondition(memberId = member.id, workoutDate = workoutDate)
 
+        val totalFindAll = queryRepository.findAll(findCountCondition)
         val findAll = queryRepository.findAll(condition)
-        return GetWorkoutsResponse(findAll.map { WorkoutDto(it.id, it.workoutDate) })
+        val workedOutFindAll = queryRepository.findAll(workedOutCondition)
+
+        // 오운완 비율
+        val totalDays = Duration.between(
+            LocalDateTime.of(date.year, date.monthValue, 1, 0, 0, 0),
+            LocalDateTime.of(date.year, date.monthValue, date.atEndOfMonth().dayOfMonth, 0, 0, 0)
+        ).toDays()
+        val rateForMonth = ((findAll.size / totalDays.toDouble()) * 100).toInt()
+
+        return GetWorkoutsResponse(
+            date = date,
+            rateForMonth = rateForMonth,
+            isWorkedOut = workedOutFindAll.isNotEmpty(),
+            totalCount = totalFindAll.size,
+            totalCountForMonth = totalDays.toInt(),
+            workoutTotalCountForMonth = findAll.size,
+            workouts = findAll.map { WorkoutDto(it.id, it.workoutDate) },
+        )
     }
 
     private fun validWorkout(workoutOfTheDayId: Long): WorkoutOfTheDay {

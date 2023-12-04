@@ -8,6 +8,7 @@ import healthiee.rest.domain.workout.entity.WorkoutOfTheDay
 import healthiee.rest.lib.querydsl.QuerydslRepositorySupport
 import org.springframework.stereotype.Repository
 import java.time.LocalDateTime
+import java.time.YearMonth
 import java.util.*
 
 @Repository
@@ -18,7 +19,7 @@ class WorkoutOfTheDayQueryRepository : QuerydslRepositorySupport(WorkoutOfTheDay
             .where(
                 memberIdEq(searchCondition.memberId),
                 workoutDateEq(searchCondition.workoutDate),
-                workoutMonthEq(searchCondition.month),
+                workoutYearMonthEq(searchCondition.yearMonth),
                 deletedEq(false),
             )
             .fetch()
@@ -40,8 +41,9 @@ class WorkoutOfTheDayQueryRepository : QuerydslRepositorySupport(WorkoutOfTheDay
         if (workoutDate != null) workoutOfTheDay.workoutDate.eq(workoutDate)
         else null
 
-    private fun workoutMonthEq(month: Int?): BooleanExpression? =
-        if (month != null) workoutOfTheDay.workoutDate.month().eq(month)
+    private fun workoutYearMonthEq(yearMonth: YearMonth?): BooleanExpression? =
+        if (yearMonth != null) workoutOfTheDay.workoutDate.month().eq(yearMonth.monthValue)
+            .and(workoutOfTheDay.workoutDate.year().eq(yearMonth.year))
         else null
 
     private fun deletedEq(deleted: Boolean): BooleanExpression {
