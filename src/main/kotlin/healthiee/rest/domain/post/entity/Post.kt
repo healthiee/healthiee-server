@@ -4,7 +4,6 @@ import healthiee.rest.domain.code.entity.Code
 import healthiee.rest.domain.common.entity.base.BaseEntity
 import healthiee.rest.domain.hashtag.entity.Hashtag
 import healthiee.rest.domain.member.entity.Member
-import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
@@ -44,7 +43,7 @@ class Post(
     var content: String = _content
         private set
 
-    @OneToMany(mappedBy = "post", cascade = [CascadeType.ALL])
+    @OneToMany(mappedBy = "post")
     var medias: MutableList<PostMedia> = mutableListOf()
         private set
 
@@ -77,29 +76,10 @@ class Post(
         category: Code?,
         location: PostLocation?,
         content: String,
-        mediaIds: List<Long>,
     ) {
         this.category = category
         this.location = location
         this.content = content
-        this.medias = medias.filter { mediaIds.contains(it.id) }.toMutableList()
-    }
-
-    fun addMedia(media: PostMedia) {
-        this.medias.add(media)
-        media.post = this
-    }
-
-    fun updateMedias(medias: List<PostMedia>) {
-        this.medias.clear()
-        this.medias.addAll(medias)
-        medias.forEach { it.post = this }
-    }
-
-    fun updatePostLikes(postLikes: List<PostLike>) {
-        this.postLikes.clear()
-        this.postLikes.addAll(postLikes)
-        postLikes.forEach { it.post = this }
     }
 
     fun increaseLikeCount() {
@@ -132,10 +112,8 @@ class Post(
             member: Member,
             content: String,
             location: PostLocation?,
-            postMedias: List<PostMedia> = listOf(),
             postHashtags: List<Hashtag> = listOf(),
         ) = Post(postId, category, member, content, location).apply {
-            postMedias.forEach { addMedia(it) }
             this.postHashTags.addAll(postHashtags)
         }
     }

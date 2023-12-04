@@ -20,7 +20,7 @@ class PostLike(
     val member: Member,
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id")
-    var post: Post,
+    val post: Post,
 ) : BaseEntity() {
 
     @Id

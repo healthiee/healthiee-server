@@ -1,6 +1,5 @@
 package healthiee.rest.domain.post.entity
 
-import com.fasterxml.jackson.annotation.JsonIgnore
 import healthiee.rest.domain.common.entity.base.BaseEntity
 import healthiee.rest.domain.common.entity.media.MediaType
 import jakarta.persistence.Column
@@ -20,17 +19,15 @@ import jakarta.persistence.Table
 class PostMedia private constructor(
     _type: MediaType,
     _url: String,
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "post_id")
+    val post: Post,
 ) : BaseEntity() {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "post_media_id")
     val id: Long = 0L
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "post_id")
-    @JsonIgnore
-    lateinit var post: Post
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
@@ -43,7 +40,8 @@ class PostMedia private constructor(
         fun createPostMedia(
             type: MediaType,
             url: String,
-        ): PostMedia = PostMedia(type, url)
+            post: Post,
+        ): PostMedia = PostMedia(type, url, post)
     }
 
     override fun toString(): String {

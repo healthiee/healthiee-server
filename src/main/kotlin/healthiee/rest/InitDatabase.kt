@@ -12,6 +12,7 @@ import healthiee.rest.domain.member.entity.RoleType
 import healthiee.rest.domain.member.repository.MemberRepository
 import healthiee.rest.domain.post.entity.Post
 import healthiee.rest.domain.post.entity.PostMedia
+import healthiee.rest.domain.post.repository.PostMediaRepository
 import healthiee.rest.domain.post.repository.PostRepository
 import org.springframework.boot.ApplicationArguments
 import org.springframework.boot.ApplicationRunner
@@ -28,6 +29,7 @@ class InitDatabase(
     private val hashtagRepository: HashtagRepository,
     private val codeRepository: CodeRepository,
     private val postRepository: PostRepository,
+    private val postMediaRepository: PostMediaRepository,
     private val passwordEncoder: PasswordEncoder,
 ) : ApplicationRunner {
 
@@ -209,19 +211,19 @@ class InitDatabase(
             val findMember1 = memberRepository.findByEmail(member1Email) ?: return
             val code = codeRepository.findByName(code1Name)
 
-            val medias = listOf(
-                PostMedia.createPostMedia(MediaType.IMAGE, "url1"), PostMedia.createPostMedia(MediaType.IMAGE, "url2")
-            )
-
             val post = Post.createPost(
                 postId = postId1,
                 category = code,
                 member = findMember1,
                 content = content1,
                 location = null,
-                postMedias = medias,
             )
             postRepository.save(post)
+
+            val medias = listOf(
+                PostMedia.createPostMedia(MediaType.IMAGE, "url1", post), PostMedia.createPostMedia(MediaType.IMAGE, "url2", post)
+            )
+            postMediaRepository.saveAll(medias)
         }
 
         val member2Email = "member2@gmail.com"

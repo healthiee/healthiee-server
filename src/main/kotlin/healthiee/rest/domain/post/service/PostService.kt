@@ -91,25 +91,24 @@ class PostService(
             postHashtags.addAll(newHashtags)
         }
 
-        val medias = mutableListOf<PostMedia>()
-        images.forEach {
-            if (!it.isEmpty) {
-                val url = s3Uploader.upload(it, MediaType.IMAGE, MediaDomainType.POST)
-                medias.add(PostMedia.createPostMedia(MediaType.IMAGE, url))
-            }
-        }
-
-        postMediaRepository.saveAll(medias)
-
         val post = Post.createPost(
             category = categoryCode,
             member = member,
             content = request.content,
             location = location,
-            postMedias = medias,
             postHashtags = postHashtags,
         )
         postRepository.save(post)
+
+        val medias = mutableListOf<PostMedia>()
+        images.forEach {
+            if (!it.isEmpty) {
+                val url = s3Uploader.upload(it, MediaType.IMAGE, MediaDomainType.POST)
+                medias.add(PostMedia.createPostMedia(MediaType.IMAGE, url, post))
+            }
+        }
+
+        postMediaRepository.saveAll(medias)
 
         return SavePostResponse(post.id)
     }
@@ -118,6 +117,11 @@ class PostService(
     fun update(postId: UUID, request: UpdatePostRequest, member: Member) {
         val post: Post = getValidPost(postId)
         validateUpdatePermission(post, member)
+
+        val findMedias = postMediaQueryRepository.findByPostId(post.id)
+        // update medias
+        val deleteMedias = findMedias.filter { !request.mediaIds.contains(it.id) }
+        postMediaRepository.deleteAll(deleteMedias)
 
         val category: Code? =
             request.categoryId?.let {
@@ -151,7 +155,7 @@ class PostService(
             postHashtags.addAll(newHashtags)
         }
 
-        post.changeContent(category, location, request.content, request.mediaIds)
+        post.changeContent(category, location, request.content)
         post.changeHashtags(postHashtags)
     }
 
@@ -202,7 +206,7 @@ class PostService(
         val findPost = getValidPost(postId)
         val findPostLike = postLikeQueryRepository.findByMemberAndPost(member.id, postId)
             ?: throw ApiException(NOT_FOUND, "좋아요를 누른 이력이 없습니다")
-        findPostLike.delete()
+        postLikeRepository.delete(findPostLike)
         findPost.decreaseLikeCount()
     }
 
@@ -211,10 +215,7 @@ class PostService(
     }
 
     private fun getValidPost(postId: UUID): Post {
-        val validPost = postQueryRepository.findById(postId) ?: throw ApiException(NOT_FOUND, "게시물을 찾을 수 없습니다")
-        validPost.updateMedias(postMediaQueryRepository.findByPostId(validPost.id))
-        return validPost
-
+        return postQueryRepository.findById(postId) ?: throw ApiException(NOT_FOUND, "게시물을 찾을 수 없습니다")
     }
 
     private fun validateUpdatePermission(post: Post, member: Member) {

@@ -24,7 +24,8 @@ class PostMediaQueryRepository : QuerydslRepositorySupport(PostMedia::class.java
     }
 
     private fun deletedEq(deleted: Boolean): BooleanExpression {
-        return postMedia.deleted.eq(deleted)
+        return if (deleted) postMedia.deleted.isTrue
+        else postMedia.deleted.isFalse
     }
 
 }
