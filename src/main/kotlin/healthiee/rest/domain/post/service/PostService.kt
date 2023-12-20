@@ -187,6 +187,16 @@ class PostService(
         }
     }
 
+    fun getPosts(
+        pageable: Pageable,
+        searchCondition: PostSearchCondition,
+        member: Member,
+    ): Page<PostDto> {
+        return postQueryRepository.findAll(pageable, searchCondition).map {
+            PostDto.create(it, it.postLikes.any { postLike -> postLike.member.id == member.id })
+        }
+    }
+
     fun getPost(postId: UUID, member: Member): PostDto {
         val findPost = postQueryRepository.findById(postId) ?: throw ApiException(NOT_FOUND, "존재 하지 않는 멤버입니다")
         return PostDto.create(findPost, findPost.postLikes.any { postLike -> postLike.member.id == member.id })
