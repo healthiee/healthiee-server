@@ -18,6 +18,7 @@ import healthiee.rest.domain.member.repository.MemberRepository
 import healthiee.rest.lib.authority.JwtTokenProvider
 import healthiee.rest.lib.authority.TokenType
 import healthiee.rest.lib.error.ApiException
+import healthiee.rest.lib.error.ErrorCode.BAD_REQUEST
 import healthiee.rest.lib.error.ErrorCode.FORBIDDEN
 import healthiee.rest.lib.error.ErrorCode.NOT_FOUND
 import healthiee.rest.lib.mail.model.MailBuilderParams
@@ -118,6 +119,7 @@ class AuthService(
 
     @Transactional
     fun register(request: RegisterRequest, image: MultipartFile?): AuthenticationTempDto {
+        validateExistNickname(request.nickname)
         val findEmailAuth =
             emailAuthRepository.findByCode(UUID.fromString(request.code)) ?: throw ApiException(
                 NOT_FOUND,
@@ -219,6 +221,12 @@ class AuthService(
             accessToken,
             newRefreshToken,
         )
+    }
+
+    private fun validateExistNickname(nickname: String) {
+        if (memberRepository.findByNickname(nickname) != null) {
+            throw ApiException(BAD_REQUEST, "이미 존재하는 닉네임입니다")
+        }
     }
 
 }

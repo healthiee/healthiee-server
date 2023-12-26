@@ -2,6 +2,7 @@ package healthiee.rest.domain.post.repository
 
 import com.querydsl.core.types.dsl.BooleanExpression
 import healthiee.rest.domain.code.entity.Code
+import healthiee.rest.domain.hashtag.entity.Hashtag
 import healthiee.rest.domain.member.entity.Member
 import healthiee.rest.domain.post.dto.PostSearchCondition
 import healthiee.rest.domain.post.entity.Post
@@ -14,6 +15,27 @@ import java.util.*
 
 @Repository
 class PostQueryRepository : QuerydslRepositorySupport(Post::class.java) {
+
+    fun findByHashtag(pageable: Pageable, content: String, hashtag: Hashtag?): Page<Post> {
+        return applyPagination(
+            pageable,
+            {
+                it.selectFrom(post)
+                    .where(
+                        contentLike(content).or(hashtagEq(hashtag))
+                    )
+                    .offset(pageable.offset)
+                    .limit(pageable.pageSize.toLong())
+                    .orderBy(post.createdDate.desc())
+            }, {
+                it.select(post.count())
+                    .from(post)
+                    .where(
+                        contentLike(content).or(hashtagEq(hashtag))
+                    )
+            }
+        )
+    }
 
     fun findAll(
         pageable: Pageable,
@@ -75,5 +97,12 @@ class PostQueryRepository : QuerydslRepositorySupport(Post::class.java) {
         else post.category.`in`(categories)
 
     private fun deletedEq(condition: Boolean): BooleanExpression = post.deleted.eq(condition)
+
+    private fun contentLike(content: String): BooleanExpression =
+        post.content.contains(content)
+
+    private fun hashtagEq(hashtag: Hashtag?): BooleanExpression? =
+        if (hashtag != null) post.postHashTags.contains(hashtag)
+        else null
 
 }

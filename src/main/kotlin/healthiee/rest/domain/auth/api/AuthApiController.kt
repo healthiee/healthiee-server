@@ -6,8 +6,10 @@ import healthiee.rest.domain.auth.dto.request.CodeLoginRequest
 import healthiee.rest.domain.auth.dto.request.RegisterRequest
 import healthiee.rest.domain.auth.dto.response.AuthResponse
 import healthiee.rest.domain.auth.dto.response.VerifyCodeResponse
-import healthiee.rest.domain.common.dto.base.Response
 import healthiee.rest.domain.auth.service.AuthService
+import healthiee.rest.domain.common.dto.base.Response
+import healthiee.rest.lib.error.ApiException
+import healthiee.rest.lib.error.ErrorCode.BAD_REQUEST
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -56,6 +58,18 @@ class AuthApiController(
             )
     }
 
+    @PostMapping("logout")
+    fun logout(): ResponseEntity<Response<Any>> {
+        return ResponseEntity.ok()
+            .headers { it.set("Set-Cookie", createEmptyCookie().toString()) }
+            .body(
+                Response(
+                    code = HttpStatus.OK.value(),
+                    message = "로그아웃이 완료되었습니다",
+                )
+            )
+    }
+
     @GetMapping("verify/{code}")
     fun verifyCode(@PathVariable("code") code: UUID): ResponseEntity<Response<VerifyCodeResponse>> {
         return ResponseEntity.ok(
@@ -76,10 +90,10 @@ class AuthApiController(
     ): ResponseEntity<Response<AuthenticationDto>> {
         val authentication = authService.register(request, image)
 
-        return ResponseEntity.ok(
-        ).headers {
-            it.set("Set-Cookie", createCookie(authentication.refreshToken).toString())
-        }
+        return ResponseEntity.ok()
+            .headers {
+                it.set("Set-Cookie", createCookie(authentication.refreshToken).toString())
+            }
             .body(
                 Response(
                     code = HttpStatus.OK.value(),
@@ -93,6 +107,9 @@ class AuthApiController(
         @RequestHeader(value = "cookie") cookie: String,
     ): ResponseEntity<Response<AuthenticationDto>> {
         val refreshToken = cookie.substring(13)
+        if (refreshToken.trim().isEmpty()) {
+            throw ApiException(BAD_REQUEST, "유효하지 않는 토큰입니다")
+        }
         val authentication = authService.refreshToken(refreshToken)
 
         return ResponseEntity
@@ -111,6 +128,15 @@ class AuthApiController(
     private fun createCookie(refreshToken: String): ResponseCookie {
         return ResponseCookie.from(REFRESH_TOKEN_KEY, refreshToken)
             .maxAge(REFRESH_TOKEN_MAX_AGE.toLong())
+            .path("/")
+//            .secure(true) // https
+            .sameSite("None")
+            .httpOnly(true)
+            .build()
+    }
+
+    private fun createEmptyCookie(): ResponseCookie {
+        return ResponseCookie.from(REFRESH_TOKEN_KEY)
             .path("/")
 //            .secure(true) // https
             .sameSite("None")

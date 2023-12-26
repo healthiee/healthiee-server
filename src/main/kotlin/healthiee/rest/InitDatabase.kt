@@ -207,6 +207,8 @@ class InitDatabase(
         val content1 =
             "1위는 맨체스터 시티의 수비수 후벵 디아스가 뽑혔다. 디아스는 2022-2023시즌 프리미어리그, FA컵, 유럽축구연맹(UEFA) 챔피언스리그(UCL) 우승으로 트레블을 달성했다. 펩 과르디올라 감독 아래 세계 최고라는 평가를 받고 있다.\n" + "\n" + "2위는 괴물 수비수 김민재였다. 김민재는 지난 시즌 이탈리아 세리에A 나폴리에서 최우수 수비상, 리그 우승컵까지 들어 올렸다. 나폴리의 33년 만에 우승은 김민재가 합류한 뒤에 이뤄졌다. 이후 뮌헨으로 이적해서도 김민재는 주전 센터백으로 자리매김했다.\n" + "\n" + "출처 : 아던트뉴스(https://www.ardentnews.co.kr)"
         val postId1 = UUID.fromString("87f3748d-1e0d-410a-8a53-3811208bfa24")
+        val hashtag = hashtagRepository.findByName("크로스핏") ?: throw IllegalStateException("[Init Database] hashtag is null")
+
         if (postRepository.findByIdOrNull(postId1) == null) {
             val findMember1 = memberRepository.findByEmail(member1Email) ?: return
             val code = codeRepository.findByName(code1Name)
@@ -217,6 +219,7 @@ class InitDatabase(
                 member = findMember1,
                 content = content1,
                 location = null,
+                postHashtags = listOf(hashtag)
             )
             postRepository.save(post)
 

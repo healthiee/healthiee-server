@@ -28,7 +28,8 @@ class Member(params: MemberParam) : BaseEntity(), UserDetails {
         private set
 
     @Column(name = "password", nullable = false)
-    val jwtPassword: String = params.password
+    var jwtPassword: String = params.password
+        private set
 
     @Column(nullable = false)
     var name: String = params.name
@@ -57,6 +58,23 @@ class Member(params: MemberParam) : BaseEntity(), UserDetails {
         inverseJoinColumns = [JoinColumn(name = "hashtag_id")],
     )
     val workoutHashtags: MutableList<Hashtag> = mutableListOf()
+
+    fun changeMember(
+        name: String,
+        nickname: String,
+        bio: String?,
+        profileUrl: String?,
+        workoutHashtags: List<Hashtag> = listOf(),
+        password: String,
+    ) {
+        this.name = name
+        this.nickname = nickname
+        this.bio = bio
+        this.profileUrl = profileUrl
+        this.workoutHashtags.clear()
+        this.workoutHashtags.addAll(workoutHashtags)
+        this.jwtPassword = password
+    }
 
     data class MemberParam(
         val id: UUID = UUID.randomUUID(),
