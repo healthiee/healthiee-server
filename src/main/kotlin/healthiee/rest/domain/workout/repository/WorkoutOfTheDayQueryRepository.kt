@@ -28,9 +28,10 @@ class WorkoutOfTheDayQueryRepository : QuerydslRepositorySupport(WorkoutOfTheDay
     fun findById(workoutOfTheDayId: Long): WorkoutOfTheDay? {
         return selectFrom(workoutOfTheDay)
             .join(workoutOfTheDay.member, member)
+            .fetchJoin()
             .where(
                 idEq(workoutOfTheDayId),
-                deletedEq(false)
+                deletedEq(false),
             )
             .fetchOne()
     }
