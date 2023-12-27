@@ -45,7 +45,8 @@ class WorkoutOfTheDayApiController(
         service.delete(workoutId, member)
         return ResponseEntity.ok(
             Response(
-                code = HttpStatus.OK.value(), message = "오운완 삭제가 완료되었습니다"
+                code = HttpStatus.OK.value(),
+                message = "오운완 삭제가 완료되었습니다",
             )
         )
     }
